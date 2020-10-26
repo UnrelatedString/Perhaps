@@ -1,10 +1,10 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.31.2.
+-- This file has been generated from package.yaml by hpack version 0.33.0.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: d805009c2dc2f3e5414edf5e1f5548b20a996ad7929910361d1359fa9098b1a4
+-- hash: 75f190eef86306ba09e9a4882ee23a4853ab32e6d04ca9bf78a67b0f059d06cd
 
 name:           perhaps
 version:        0.1.0.0
@@ -27,7 +27,8 @@ source-repository head
 
 library
   exposed-modules:
-      Lib
+      Perhaps.Interpret
+      Perhaps.Tokenize
   other-modules:
       Paths_perhaps
   hs-source-dirs:

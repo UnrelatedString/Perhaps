@@ -1,6 +1,4 @@
 module Main where
 
-import Lib
-
 main :: IO ()
-main = someFunc
+main = putStrLn "No CLI yet -- use stack ghci to play around"
