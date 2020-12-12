@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 75f190eef86306ba09e9a4882ee23a4853ab32e6d04ca9bf78a67b0f059d06cd
+-- hash: f5304f3090191601394867f9a4bb02cdd94be3a46df7ef5a4e78981575c9b7ea
 
 name:           perhaps
 version:        0.1.0.0
@@ -27,7 +27,7 @@ source-repository head
 
 library
   exposed-modules:
-      Perhaps.Interpret
+      Perhaps.Data
       Perhaps.Tokenize
   other-modules:
       Paths_perhaps
@@ -40,9 +40,12 @@ library
 executable perhaps-exe
   main-is: Main.hs
   other-modules:
+      Perhaps.Data
+      Perhaps.Tokenize
       Paths_perhaps
   hs-source-dirs:
       app
+      src
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
