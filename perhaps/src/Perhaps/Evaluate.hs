@@ -1,10 +1,11 @@
 module Perhaps.Evaluate
     ( tokens,
-      verboseTokens
+      verboseTokens,
+      toSuffix
     ) where
 
 import Perhaps.Data
-    ( Token (Literal, Primitive, Operator),
+    ( Token (Literal, Primitive, Operator, ReplaceWithEverything),
       Value (Number, Char, List),
       Primitive,
       Operator,
@@ -38,3 +39,11 @@ verboseTokens = map (map parseVerboseToken . tokenizeLine "") . lines
               where t = case tok of '"':r -> reverse r
                                     _ -> reverse tok
                     h = head t
+
+toSuffix :: [Token] -> [Token]
+toSuffix = reverse . flips . reverse
+    where flips :: [Token] -> [Token]
+          flips (Operator x:t) = Operator x:flips (ReplaceWithEverything:t)
+          flips (x:Operator y:t) = Operator y:flips (x:t)
+          flips (x:t) = x:flips t
+          flips [] = []
