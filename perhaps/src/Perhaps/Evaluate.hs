@@ -7,8 +7,9 @@ module Perhaps.Evaluate
 import Perhaps.Data
     ( Token (Literal, Primitive, Operator, ReplaceWithEverything),
       Value (Number, Char, List),
+      Function (Primitive, Literal, Derived, Train)
       Primitive,
-      Operator,
+      Operator, opArity,
       Number)
 
 import Data.Char (isDigit, isUpper)
@@ -47,3 +48,20 @@ toSuffix = reverse . flips . reverse
           flips (x:Operator y:t) = Operator y:flips (x:t)
           flips (x:t) = x:flips t
           flips [] = []
+
+data PossiblyIncompleteFunction = Primitive Primitive
+                                | Literal Value
+                                | ReplaceWithEverything
+                                | Derived Operator [PossiblyIncompleteFunction]
+
+operate :: [Token] -> [Function]
+operate = fill . foldl step [repeat ReplaceWithEverything]
+    where step :: [Maybe Function] -> Token -> [Maybe Function]
+          step stack (Literal tok) = Just (Literal tok):stack
+          step stack (Primitive tok) = Just (Primitive tok):stack
+          step stack ReplaceWithEverything = ReplaceWithEverything:stack
+          step stack (Operator tok) = Just (Derived tok $
+                                          take (opArity tok) stack) :
+                                          drop (opArity tok) stack
+          fill :: [PossiblyIncompleteFunction] -> [Function]
+          fill 

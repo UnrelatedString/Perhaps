@@ -1,10 +1,12 @@
 module Perhaps.Data
     ( Token (Literal, Primitive, Operator, ReplaceWithEverything),
       Value (Number, Char, List),
+      Function (Primitive, Literal, Derived),
       Primitive,
       Operator,
       Number,
-      integerMaybe
+      integerMaybe,
+      opArity
     ) where
 
 import Data.Ratio (Rational, numerator, denominator)
@@ -15,6 +17,10 @@ data Token = Literal Value
            | Operator Operator
            | ReplaceWithEverything deriving (Show)
 
+data Function = Primitive Primitive
+              | Literal Value
+              | Derived Operator [Function]
+              | Train [Function] deriving (Show)
 
 -- TODO: flagged lists -- just using lists for convenience at moment
 -- replace before even implementing choice
@@ -32,3 +38,6 @@ integerMaybe x
 
 type Primitive = String
 type Operator = String
+
+opArity :: Operator -> Int
+opArity = length -- PHP moment
