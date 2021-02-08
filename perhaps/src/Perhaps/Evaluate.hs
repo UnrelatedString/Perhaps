@@ -1,7 +1,9 @@
 module Perhaps.Evaluate
     ( tokens,
       verboseTokens,
-      toPostfix
+      toPostfix,
+      swapBy,
+      operate
     ) where
 
 import Perhaps.Data
@@ -13,6 +15,8 @@ import Perhaps.Data
       Number)
 
 import Data.Char (isDigit, isUpper)
+import Data.Maybe (isNothing)
+import Data.Foldable (toList)
 import Control.Monad (join)
 
 tokens :: String -> [[Token]]
@@ -60,6 +64,18 @@ isUnary _ = False
 toPostfix :: [Token] -> [Maybe Token]
 toPostfix = map join . swapBy (any isUnary) . reverse . swapBy isOperator . reverse
 
+data Expression = PrimitiveE Primitive
+                | LiteralE Value
+                | DerivedE Operator [Maybe Expression] deriving (Show)
+
 -- TODO: care about extra missing arguments (consume more lines? supply primitives?)
-postfixOperate :: [Maybe Token] -> [Function]
-postfixOperate = undefined
+operate :: [Maybe Token] -> [Expression]
+operate = reverse . (>>= toList) . foldl operate' [] -- no top level Nothing
+    where operate' :: [Maybe Expression] -> Maybe Token -> [Maybe Expression]
+          operate' stack (Just (OperatorT x)) = Just (DerivedE x $ reverse args) : rest
+              where a = opArity x
+                    args = take a stack
+                    rest = drop a stack
+          operate' stack (Just (PrimitiveT x)) = Just (PrimitiveE x) : stack
+          operate' stack (Just (LiteralT x)) = Just (LiteralE x) : stack
+          operate' stack Nothing = Nothing : stack
