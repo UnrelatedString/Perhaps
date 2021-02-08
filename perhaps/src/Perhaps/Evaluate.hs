@@ -3,7 +3,9 @@ module Perhaps.Evaluate
       verboseTokens,
       toPostfix,
       swapBy,
-      operate
+      operate,
+      fillGaps,
+      testF
     ) where
 
 import Perhaps.Data
@@ -79,3 +81,29 @@ operate = reverse . (>>= toList) . foldl operate' [] -- no top level Nothing
           operate' stack (Just (PrimitiveT x)) = Just (PrimitiveE x) : stack
           operate' stack (Just (LiteralT x)) = Just (LiteralE x) : stack
           operate' stack Nothing = Nothing : stack
+
+completeMaybe :: Maybe Expression -> Maybe Function
+completeMaybe Nothing = Nothing
+completeMaybe (Just (DerivedE x args)) = fmap (DerivedF x) $ sequence $ map completeMaybe args
+completeMaybe (Just (PrimitiveE x)) = Just $ PrimitiveF x
+completeMaybe (Just (LiteralE x)) = Just $ LiteralF x
+
+fillGap :: [Function] -> Maybe Expression -> Function
+fillGap t Nothing = TrainF t
+fillGap t (Just (DerivedE x args)) = DerivedF x $ map (fillGap t) args
+fillGap t (Just (PrimitiveE x)) = PrimitiveF x
+fillGap t (Just (LiteralE x)) = LiteralF x
+
+fillGaps :: [Expression] -> [Function]
+fillGaps (DerivedE x args : t)
+    | isNothing $ completeMaybe $ Just $ DerivedE x args = [DerivedF x $ map (fillGap $ fillGaps t) args]
+fillGaps es = foldl fillGaps' [] es
+    where fillGaps' :: [Function] -> Expression -> [Function]
+          fillGaps' fs (DerivedE x args) =
+              case completeMaybe (Just $ DerivedE x args) of
+                  Nothing -> [DerivedF x $ map (fillGap fs) args]
+                  Just f -> f : fs
+          fillGaps' fs (PrimitiveE x) = PrimitiveF x : fs
+          fillGaps' fs (LiteralE x) = LiteralF x : fs
+
+testF = fillGaps.operate.toPostfix.head.verboseTokens
