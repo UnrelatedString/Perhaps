@@ -1,18 +1,19 @@
 module Perhaps.Evaluate
     ( tokens,
       verboseTokens,
-      toSuffix
+      opSwap
     ) where
 
 import Perhaps.Data
-    ( Token (Literal, Primitive, Operator, ReplaceWithEverything),
+    ( Token (Literal, Primitive, Operator),
       Value (Number, Char, List),
-      Function (Primitive, Literal, Derived, Train)
+     -- Function (Primitive, Literal, Derived, Train),
       Primitive,
       Operator, opArity,
       Number)
 
 import Data.Char (isDigit, isUpper)
+import Control.Monad (join)
 
 tokens :: String -> [[Token]]
 tokens = undefined
@@ -41,25 +42,20 @@ verboseTokens = map (map parseVerboseToken . tokenizeLine "") . lines
                                     _ -> reverse tok
                     h = head t
 
-toPrefix :: [Token] -> [Token]
-toPrefix (Operator x:t) = Operator x:toPrefix (ReplaceWithEverything:t)
-toPrefix (x:Operator y:t) = Operator y:toPrefix (x:t)
-toPrefix (x:t) = x:toPrefix t
-toPrefix [] = []
+swaps :: (a -> Bool) -> [a] -> [Maybe a]
+swaps f = swaps' Nothing
+    where swaps' h (x:t)
+              | f x = Just x : swaps' h t
+              | otherwise = h : swaps' (Just x) t
+          swaps' h [] = [h]
 
-data PossiblyIncompleteFunction = Primitive Primitive
-                                | Literal Value
-                                | ReplaceWithEverything
-                                | Derived Operator [PossiblyIncompleteFunction]
+isOperator :: Token -> Bool
+isOperator (Operator _) = True
+isOperator _ = False
 
-operate :: [Token] -> [Function]
-operate = fill . reverse . foldl step [repeat ReplaceWithEverything] . reverse
-    where step :: [Maybe Function] -> Token -> [Maybe Function]
-          step stack (Literal tok) = Just (Literal tok):stack
-          step stack (Primitive tok) = Just (Primitive tok):stack
-          step stack ReplaceWithEverything = ReplaceWithEverything:stack
-          step stack (Operator tok) = Just (Derived tok $
-                                          take (opArity tok) stack) :
-                                          drop (opArity tok) stack
-          fill :: [PossiblyIncompleteFunction] -> [Function]
-          fill
+isUnary :: Token -> Bool
+isUnary (Operator x) = opArity x == 1
+isUnary _ = False
+
+opSwap :: [Token] -> [Maybe Token]
+opSwap = map join . swaps (any isUnary) . reverse . swaps isOperator . reverse

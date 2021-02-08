@@ -8,9 +8,9 @@ cabal-version: 1.12
 
 name:           perhaps
 version:        0.1.0.0
-description:    Please see the README on GitHub at <https://github.com/githubuser/perhaps#readme>
-homepage:       https://github.com/githubuser/perhaps#readme
-bug-reports:    https://github.com/githubuser/perhaps/issues
+description:    Please see the README on GitHub at <https://github.com/UnrelatedString/perhaps#readme>
+homepage:       https://github.com/UnrelatedString/Perhaps#readme
+bug-reports:    https://github.com/UnrelatedString/Perhaps/issues
 author:         Author name here
 maintainer:     example@example.com
 copyright:      2020 Author name here
@@ -23,7 +23,7 @@ extra-source-files:
 
 source-repository head
   type: git
-  location: https://github.com/githubuser/perhaps
+  location: https://github.com/UnrelatedString/perhaps
 
 library
   exposed-modules:
