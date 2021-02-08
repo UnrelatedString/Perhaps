@@ -1,7 +1,7 @@
 module Perhaps.Data
-    ( Token (Literal, Primitive, Operator),
+    ( Token (LiteralT, PrimitiveT, OperatorT),
       Value (Number, Char, List),
-      Function,-- (Primitive, Literal, Derived, Train),
+      Function (PrimitiveF, LiteralF, DerivedF, TrainF),
       Primitive,
       Operator,
       Number,
@@ -12,14 +12,14 @@ module Perhaps.Data
 import Data.Ratio (Rational, numerator, denominator)
 --import Data.Complex (Complex, realPart, imagPart)
 
-data Token = Literal Value
-           | Primitive Primitive
-           | Operator Operator deriving (Show)
+data Token = LiteralT Value
+           | PrimitiveT Primitive
+           | OperatorT Operator deriving (Show)
 
-data Function = CanIReallyNotReuseConstructorNamesWhatTheHell {-Primitive Primitive
-              | Literal Value
-              | Derived Operator [Function]
-              | Train [Function] deriving (Show)-}
+data Function = PrimitiveF Primitive
+              | LiteralF Value
+              | DerivedF Operator [Function]
+              | TrainF [Function] deriving (Show)
 
 -- TODO: flagged lists -- just using lists for convenience at moment
 -- replace before even implementing choice

@@ -1,13 +1,13 @@
 module Perhaps.Evaluate
     ( tokens,
       verboseTokens,
-      opSwap
+      toPostfix
     ) where
 
 import Perhaps.Data
-    ( Token (Literal, Primitive, Operator),
+    ( Token (LiteralT, PrimitiveT, OperatorT),
       Value (Number, Char, List),
-     -- Function (Primitive, Literal, Derived, Train),
+      Function (PrimitiveF, LiteralF, DerivedF, TrainF),
       Primitive,
       Operator, opArity,
       Number)
@@ -34,28 +34,32 @@ verboseTokens = map (map parseVerboseToken . tokenizeLine "") . lines
           munchString tok (h:rest) = munchString (h:tok) rest
           parseVerboseToken :: String -> Token
           parseVerboseToken tok
-              | all isDigit t = Literal $ Number $ fromInteger $ read t
-              | h == '"' = Literal $ List $ map Char $ tail t
-              | isUpper h = Operator t
-              | otherwise = Primitive t
+              | all isDigit t = LiteralT $ Number $ fromInteger $ read t
+              | h == '"' = LiteralT $ List $ map Char $ tail t
+              | isUpper h = OperatorT t
+              | otherwise = PrimitiveT t
               where t = case tok of '"':r -> reverse r
                                     _ -> reverse tok
                     h = head t
 
-swaps :: (a -> Bool) -> [a] -> [Maybe a]
-swaps f = swaps' Nothing
-    where swaps' h (x:t)
-              | f x = Just x : swaps' h t
-              | otherwise = h : swaps' (Just x) t
-          swaps' h [] = [h]
+swapBy :: (a -> Bool) -> [a] -> [Maybe a]
+swapBy f = swapBy' Nothing
+    where swapBy' h (x:t)
+              | f x = Just x : swapBy' h t
+              | otherwise = h : swapBy' (Just x) t
+          swapBy' h [] = [h]
 
 isOperator :: Token -> Bool
-isOperator (Operator _) = True
+isOperator (OperatorT _) = True
 isOperator _ = False
 
 isUnary :: Token -> Bool
-isUnary (Operator x) = opArity x == 1
+isUnary (OperatorT x) = opArity x == 1
 isUnary _ = False
 
-opSwap :: [Token] -> [Maybe Token]
-opSwap = map join . swaps (any isUnary) . reverse . swaps isOperator . reverse
+toPostfix :: [Token] -> [Maybe Token]
+toPostfix = map join . swapBy (any isUnary) . reverse . swapBy isOperator . reverse
+
+-- TODO: care about extra missing arguments (consume more lines? supply primitives?)
+postfixOperate :: [Maybe Token] -> [Function]
+postfixOperate = undefined
