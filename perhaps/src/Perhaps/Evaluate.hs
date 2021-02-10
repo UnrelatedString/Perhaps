@@ -97,11 +97,11 @@ fillGap t (Just (LiteralE x)) = LiteralF x
 fillGaps :: [Expression] -> [Function]
 fillGaps (DerivedE x args : t)
     | isNothing $ completeMaybe $ Just $ DerivedE x args = [DerivedF x $ map (fillGap $ fillGaps t) args]
-fillGaps es = foldl fillGaps' [] es
+fillGaps es = reverse $ foldl fillGaps' [] es
     where fillGaps' :: [Function] -> Expression -> [Function]
           fillGaps' fs (DerivedE x args) =
               case completeMaybe (Just $ DerivedE x args) of
-                  Nothing -> [DerivedF x $ map (fillGap fs) args]
+                  Nothing -> [DerivedF x $ map (fillGap $ reverse fs) args]
                   Just f -> f : fs
           fillGaps' fs (PrimitiveE x) = PrimitiveF x : fs
           fillGaps' fs (LiteralE x) = LiteralF x : fs
