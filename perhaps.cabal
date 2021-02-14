@@ -1,3 +1,7 @@
+-- SPDX-FileCopyrightText: 2020-2021 UnrelatedString <https://github.com/UnrelatedString> and other Perhaps contributors
+--
+-- SPDX-License-Identifier: BSD-3-Clause
+
 cabal-version: 1.12
 
 -- This file has been generated from package.yaml by hpack version 0.33.0.
@@ -8,13 +12,13 @@ cabal-version: 1.12
 
 name:           perhaps
 version:        0.1.0.0
-description:    Please see the README on GitHub at <https://github.com/UnrelatedString/perhaps#readme>
+description:    Please see the README on GitHub at <https://github.com/UnrelatedString/Perhaps#readme>.
 homepage:       https://github.com/UnrelatedString/Perhaps#readme
 bug-reports:    https://github.com/UnrelatedString/Perhaps/issues
-author:         Author name here
-maintainer:     example@example.com
-copyright:      2020 Author name here
-license:        BSD3
+author:         UnrelatedString
+maintainer:     unrelatedstring@gmail.com
+copyright:      2020-2021 UnrelatedString <https://github.com/UnrelatedString> and other Perhaps contributors
+license:        BSD-3-Clause
 license-file:   LICENSE
 build-type:     Simple
 extra-source-files:
@@ -23,7 +27,7 @@ extra-source-files:
 
 source-repository head
   type: git
-  location: https://github.com/UnrelatedString/perhaps
+  location: https://github.com/UnrelatedString/Perhaps
 
 library
   exposed-modules:
