@@ -1,3 +1,9 @@
+{-
+ - SPDX-FileCopyrightText: 2020-2021 UnrelatedString <https://github.com/UnrelatedString> and other Perhaps contributors
+ -
+ - SPDX-License-Identifier: BSD-3-Clause
+ -}
+
 module Perhaps.Data
     ( Token (LiteralT, PrimitiveT, OperatorT),
       Value (Number, Char, List),
