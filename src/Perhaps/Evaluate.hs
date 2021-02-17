@@ -19,6 +19,7 @@ module Perhaps.Evaluate
 import Perhaps.Data
     ( Token (LiteralT, PrimitiveT, OperatorT),
       Value (Number, Char, List),
+      Expression (PrimitiveE, LiteralE, DerivedE),
       Function (PrimitiveF, LiteralF, DerivedF, TrainF),
       Primitive,
       Operator, opArity,
@@ -74,10 +75,6 @@ isUnary _ = False
 
 toPostfix :: [Token] -> [Maybe Token]
 toPostfix = map join . swapBy (any isUnary) . reverse . swapBy isOperator . reverse
-
-data Expression = PrimitiveE Primitive
-                | LiteralE Value
-                | DerivedE Operator [Maybe Expression] deriving (Show)
 
 -- TODO: care about extra missing arguments (consume more lines? supply primitives?)
 operate :: [Maybe Token] -> [Expression]

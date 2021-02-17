@@ -7,6 +7,7 @@
 module Perhaps.Data
     ( Token (LiteralT, PrimitiveT, OperatorT),
       Value (Number, Char, List),
+      Expression (PrimitiveE, LiteralE, DerivedE),
       Function (PrimitiveF, LiteralF, DerivedF, TrainF),
       Primitive,
       Operator,
@@ -21,6 +22,10 @@ import Data.Ratio (Rational, numerator, denominator)
 data Token = LiteralT Value
            | PrimitiveT Primitive
            | OperatorT Operator deriving (Show)
+
+data Expression = PrimitiveE Primitive
+               | LiteralE Value
+               | DerivedE Operator [Maybe Expression] deriving (Show)
 
 data Function = PrimitiveF Primitive
               | LiteralF Value
