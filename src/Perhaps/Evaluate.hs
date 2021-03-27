@@ -22,7 +22,9 @@ import Perhaps.Data
       Expression (PrimitiveE, LiteralE, DerivedE),
       Function (PrimitiveF, LiteralF, DerivedF, TrainF),
       Primitive,
-      Operator, opArity,
+      Operator (Operator),
+      lookOp,
+      Derived,
       Number)
 
 import Data.Char (isDigit, isUpper)
@@ -51,7 +53,7 @@ verboseTokens = map (map parseVerboseToken . tokenizeLine "") . lines
           parseVerboseToken tok
               | all isDigit t = LiteralT $ Number $ fromInteger $ read t
               | h == '"' = LiteralT $ List $ map Char $ tail t
-              | isUpper h = OperatorT t
+              | isUpper h = OperatorT $ lookOp t
               | otherwise = PrimitiveT t
               where t = case tok of '"':r -> reverse r
                                     _ -> reverse tok
@@ -70,7 +72,7 @@ isOperator (OperatorT _) = True
 isOperator _ = False
 
 isUnary :: Token -> Bool
-isUnary (OperatorT x) = opArity x == 1
+isUnary (OperatorT (Operator u _)) = u
 isUnary _ = False
 
 toPostfix :: [Token] -> [Maybe Token]
@@ -80,34 +82,32 @@ toPostfix = map join . swapBy (any isUnary) . reverse . swapBy isOperator . reve
 operate :: [Maybe Token] -> [Expression]
 operate = reverse . (>>= toList) . foldl operate' [] -- no top level Nothing
     where operate' :: [Maybe Expression] -> Maybe Token -> [Maybe Expression]
-          operate' stack (Just (OperatorT x)) = Just (DerivedE x $ reverse args) : rest
-              where a = opArity x
-                    args = take a stack
-                    rest = drop a stack
+          operate' stack (Just (OperatorT (Operator _ op))) = Just (DerivedE d) : rest
+              where (d, rest) = op stack
           operate' stack (Just (PrimitiveT x)) = Just (PrimitiveE x) : stack
           operate' stack (Just (LiteralT x)) = Just (LiteralE x) : stack
           operate' stack Nothing = Nothing : stack
 
 completeMaybe :: Maybe Expression -> Maybe Function
 completeMaybe Nothing = Nothing
-completeMaybe (Just (DerivedE x args)) = fmap (DerivedF x) $ sequence $ map completeMaybe args
+completeMaybe (Just (DerivedE d)) = DerivedF <$> traverse completeMaybe d --fmap (DerivedF x) $ sequence $ map completeMaybe args
 completeMaybe (Just (PrimitiveE x)) = Just $ PrimitiveF x
 completeMaybe (Just (LiteralE x)) = Just $ LiteralF x
 
 fillGap :: [Function] -> Maybe Expression -> Function
 fillGap t Nothing = TrainF t
-fillGap t (Just (DerivedE x args)) = DerivedF x $ map (fillGap t) args
+fillGap t (Just (DerivedE d)) = DerivedF $ fmap (fillGap t) d
 fillGap t (Just (PrimitiveE x)) = PrimitiveF x
 fillGap t (Just (LiteralE x)) = LiteralF x
 
 fillGaps :: [Expression] -> [Function]
-fillGaps (DerivedE x args : t)
-    | isNothing $ completeMaybe $ Just $ DerivedE x args = [DerivedF x $ map (fillGap $ fillGaps t) args]
+fillGaps (DerivedE d : t)
+    | isNothing $ completeMaybe $ Just $ DerivedE d = [DerivedF $ fmap (fillGap $ fillGaps t) d]
 fillGaps es = reverse $ foldl fillGaps' [] es
     where fillGaps' :: [Function] -> Expression -> [Function]
-          fillGaps' fs (DerivedE x args) =
-              case completeMaybe (Just $ DerivedE x args) of
-                  Nothing -> [DerivedF x $ map (fillGap $ reverse fs) args]
+          fillGaps' fs (DerivedE d) =
+              case completeMaybe (Just $ DerivedE d) of
+                  Nothing -> [DerivedF $ fmap (fillGap $ reverse fs) d]
                   Just f -> f : fs
           fillGaps' fs (PrimitiveE x) = PrimitiveF x : fs
           fillGaps' fs (LiteralE x) = LiteralF x : fs
