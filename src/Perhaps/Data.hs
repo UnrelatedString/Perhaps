@@ -72,6 +72,6 @@ data Operator = Operator Bool ([Maybe Expression] -> (Derived (Maybe Expression)
 
 -- TODO: make actual operators and put them in a different file
 lookOp :: String -> Operator -- ba dum tss 🥁
-lookOp "A" = Operator True (\(e:es) -> (Derived (e:.Nil) (\(f:.Nil) -> show f ++ "A"), es))
-lookOp "B" = Operator False (\(x:y:es) -> (Derived (x:.y:.Nil) (\(x:.y:.Nil) -> show x ++ "B" ++ show y), es))
-lookOp "D" = Operator False (\(x:y:es) -> (Derived (x:.y:.Nil) (\(x:.y:.Nil) -> show x ++ "D" ++ show y), es))
+lookOp "A" = Operator True (\(e:es) -> (Derived (e:.Nil) (\(f:.Nil) -> "(" ++ show f ++ " A)"), es))
+lookOp "B" = Operator False (\(x:y:es) -> (Derived (x:.y:.Nil) (\(x:.y:.Nil) -> "(" ++ show x ++ " B " ++ show y++")"), es))
+lookOp "D" = Operator False (\(x:y:es) -> (Derived (x:.y:.Nil) (\(x:.y:.Nil) -> "(" ++ show x ++ " D " ++ show y++")"), es))

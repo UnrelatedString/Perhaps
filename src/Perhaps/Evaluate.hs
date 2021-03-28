@@ -24,7 +24,6 @@ import Perhaps.Data
       Primitive,
       Operator (Operator),
       lookOp,
-      Derived,
       Number)
 
 import Data.Char (isDigit, isUpper)
@@ -90,13 +89,13 @@ operate = reverse . (>>= toList) . foldl operate' [] -- no top level Nothing
 
 completeMaybe :: Maybe Expression -> Maybe Function
 completeMaybe Nothing = Nothing
-completeMaybe (Just (DerivedE d)) = DerivedF <$> traverse completeMaybe d --fmap (DerivedF x) $ sequence $ map completeMaybe args
+completeMaybe (Just (DerivedE d)) = DerivedF <$> traverse completeMaybe d
 completeMaybe (Just (PrimitiveE x)) = Just $ PrimitiveF x
 completeMaybe (Just (LiteralE x)) = Just $ LiteralF x
 
 fillGap :: [Function] -> Maybe Expression -> Function
 fillGap t Nothing = TrainF t
-fillGap t (Just (DerivedE d)) = DerivedF $ fmap (fillGap t) d
+fillGap t (Just (DerivedE d)) = DerivedF $ fillGap t <$> d
 fillGap t (Just (PrimitiveE x)) = PrimitiveF x
 fillGap t (Just (LiteralE x)) = LiteralF x
 
