@@ -14,8 +14,7 @@ module Perhaps.Data
       Function (PrimitiveF, LiteralF, DerivedF, TrainF),
       Primitive,
       Operator (Operator),
-      lookOp,
-      Derived,
+      Derived (Derived),
       derive,
       Number,
       integerMaybe
@@ -23,7 +22,6 @@ module Perhaps.Data
 
 import Data.Ratio (Rational, numerator, denominator)
 --import Data.Complex (Complex, realPart, imagPart)
-import Data.FixedList (Nil (Nil), Cons ((:.)))
 
 data Token = LiteralT Value
            | PrimitiveT Primitive
@@ -37,6 +35,11 @@ data Function = PrimitiveF Primitive
               | LiteralF Value
               | DerivedF (Derived Function)
               | TrainF [Function] deriving (Show)
+
+data Adicity = Niladic | Monadic | Dyadic | Variadic (Adicity -> Adicity)
+
+class Adic a where
+    adicity :: a -> Adicity
 
 -- TODO: flagged lists -- just using lists for convenience at moment
 -- replace before even implementing choice
@@ -53,25 +56,19 @@ integerMaybe x
 -- placeholder
 type Primitive = String
 
-data Derived a = forall f. Traversable f => Derived (f a) (f Function -> String)
+data Derived a = forall f. Traversable f => Derived (f Function -> String) (f a)
 
 instance Functor Derived where
-    fmap f (Derived args op) = Derived (fmap f args) op
+    fmap f (Derived op args) = Derived op $ fmap f args
 instance Foldable Derived where
-    foldr f x (Derived args _) = foldr f x args
+    foldr f x (Derived _ args) = foldr f x args
 instance Traversable Derived where
-    sequenceA (Derived args op) = flip Derived op <$> sequenceA args
+    sequenceA (Derived op args) = Derived op <$> sequenceA args
 
 instance Show (Derived Function) where
     show = derive -- I genuinely don't know where I'm going with this placeholder functionality lmao
 
-derive :: Derived Function -> String
-derive (Derived args op) = op args
+derive :: Derived Function -> String -- bad name
+derive (Derived op args) = op args
 
 data Operator = Operator Bool ([Maybe Expression] -> (Derived (Maybe Expression), [Maybe Expression]))
-
--- TODO: make actual operators and put them in a different file
-lookOp :: String -> Operator -- ba dum tss 🥁
-lookOp "A" = Operator True (\(e:es) -> (Derived (e:.Nil) (\(f:.Nil) -> "(" ++ show f ++ " A)"), es))
-lookOp "B" = Operator False (\(x:y:es) -> (Derived (x:.y:.Nil) (\(x:.y:.Nil) -> "(" ++ show x ++ " B " ++ show y++")"), es))
-lookOp "D" = Operator False (\(x:y:es) -> (Derived (x:.y:.Nil) (\(x:.y:.Nil) -> "(" ++ show x ++ " D " ++ show y++")"), es))

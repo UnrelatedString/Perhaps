@@ -45,6 +45,7 @@ executable perhaps-exe
   other-modules:
       Perhaps.Data
       Perhaps.Evaluate
+      Perhaps.Operator
       Paths_perhaps
   hs-source-dirs:
       app

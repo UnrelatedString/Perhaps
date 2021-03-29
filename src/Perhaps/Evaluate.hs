@@ -23,8 +23,11 @@ import Perhaps.Data
       Function (PrimitiveF, LiteralF, DerivedF, TrainF),
       Primitive,
       Operator (Operator),
-      lookOp,
-      Number)
+      Number
+    )
+
+import Perhaps.Operator
+    ( lookOp )
 
 import Data.Char (isDigit, isUpper)
 import Data.Maybe (isNothing)
