@@ -74,7 +74,7 @@ isOperator (OperatorT _) = True
 isOperator _ = False
 
 isUnary :: Token -> Bool
-isUnary (OperatorT (Operator u _)) = u
+isUnary (OperatorT (Operator _ u _)) = u
 isUnary _ = False
 
 toPostfix :: [Token] -> [Maybe Token]
@@ -84,7 +84,7 @@ toPostfix = map join . swapBy (any isUnary) . reverse . swapBy isOperator . reve
 operate :: [Maybe Token] -> [Expression]
 operate = reverse . (>>= toList) . foldl operate' [] -- no top level Nothing
     where operate' :: [Maybe Expression] -> Maybe Token -> [Maybe Expression]
-          operate' stack (Just (OperatorT (Operator _ op))) = Just (DerivedE d) : rest
+          operate' stack (Just (OperatorT (Operator _ _ op))) = Just (DerivedE d) : rest
               where (d, rest) = op stack
           operate' stack (Just (PrimitiveT x)) = Just (PrimitiveE x) : stack
           operate' stack (Just (LiteralT x)) = Just (LiteralE x) : stack

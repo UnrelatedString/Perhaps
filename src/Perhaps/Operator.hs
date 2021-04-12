@@ -11,20 +11,21 @@ import Data.FixedList
     ( Nil (Nil),
       Cons ((:.)) )
 
-unary :: (Function -> String) -> Operator
-unary f = Operator True (\(x:es) -> (Derived d (x:.Nil), es))
-    where d :: Cons Nil Function -> String
+unary :: String -> (Function -> String) -> Operator
+unary name f = Operator name True (\(x:es) -> (Derived name d (x:.Nil), es))
+    where d :: Cons Nil Function -> String -- I could use Identity, but the golfer in me says :.Nil is three bytes shorter
           d (x :. Nil) = f x
 
-binary :: (Function -> Function -> String) -> Operator
-binary f = Operator True (\(y:x:es) -> (Derived d (x:.y:.Nil), es))
+binary :: String -> (Function -> Function -> String) -> Operator
+binary name f = Operator name True (\(y:x:es) -> (Derived name d (x:.y:.Nil), es))
     where d :: Cons (Cons Nil) Function -> String
           d (x :. y :. Nil) = f x y
 
+--Is this a job for Template Haskell... or the C preprocessor?
 lookOp :: String -> Operator -- ba dum tss 🥁
-lookOp "A" = unary placeholderA
-lookOp "B" = binary placeholderB
-lookOp "D" = binary placeholderD
+lookOp "A" = unary "A" placeholderA
+lookOp "B" = binary "B" placeholderB
+lookOp "D" = binary "B" placeholderD
 
 
 -- TODO: actual operators, replace String with something

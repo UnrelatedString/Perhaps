@@ -6,6 +6,8 @@
 
 {-# LANGUAGE ExistentialQuantification #-}
 {-# LANGUAGE FlexibleInstances #-}
+-- {-# LANGUAGE StandaloneDeriving #-}
+{-# LANGUAGE QuantifiedConstraints #-}
 
 module Perhaps.Data
     ( Token (LiteralT, PrimitiveT, OperatorT),
@@ -25,17 +27,22 @@ import Data.Ratio (Rational, numerator, denominator)
 
 data Token = LiteralT Value
            | PrimitiveT Primitive
-           | OperatorT Operator --deriving (Show)
+           | OperatorT Operator deriving (Show)
 
 data Expression = PrimitiveE Primitive
                | LiteralE Value
-               | DerivedE (Derived (Maybe Expression)) --deriving (Show)
+               | DerivedE (Derived (Maybe Expression))
+               | LeftBindE (Maybe Expression) (Maybe Expression)
+               | RightBindE (Maybe Expression) (Maybe Expression) deriving (Show)
 
 data Function = PrimitiveF Primitive
               | LiteralF Value
               | DerivedF (Derived Function)
-              | TrainF [Function] deriving (Show)
+              | TrainF [Function]
+              | LeftBindF Function Function
+              | RightBindF Function Function deriving (Show)
 
+-- Syntactic adicity, not semantic adicity
 data Adicity = Niladic | Monadic | Dyadic | Variadic (Adicity -> Adicity)
 
 class Adic a where
@@ -56,19 +63,23 @@ integerMaybe x
 -- placeholder
 type Primitive = String
 
-data Derived a = forall f. Traversable f => Derived (f Function -> String) (f a)
+data Derived a = forall f. (Traversable f, forall b. Show b => Show (f b)) =>
+                     Derived String (f Function -> String) (f a)
 
 instance Functor Derived where
-    fmap f (Derived op args) = Derived op $ fmap f args
+    fmap f (Derived name op args) = Derived name op $ fmap f args
 instance Foldable Derived where
-    foldr f x (Derived _ args) = foldr f x args
+    foldr f x (Derived _ _ args) = foldr f x args
 instance Traversable Derived where
-    sequenceA (Derived op args) = Derived op <$> sequenceA args
+    sequenceA (Derived name op args) = Derived name op <$> sequenceA args
 
-instance Show (Derived Function) where
-    show = derive -- I genuinely don't know where I'm going with this placeholder functionality lmao
+instance Show a => Show (Derived a) where
+    show (Derived name _ args) = name ++ " " ++ show args
 
 derive :: Derived Function -> String -- bad name
-derive (Derived op args) = op args
+derive (Derived _ op args) = op args
 
-data Operator = Operator Bool ([Maybe Expression] -> (Derived (Maybe Expression), [Maybe Expression]))
+data Operator = Operator String Bool ([Maybe Expression] -> (Derived (Maybe Expression), [Maybe Expression]))
+
+instance Show Operator where
+    show (Operator name _ _) = name
