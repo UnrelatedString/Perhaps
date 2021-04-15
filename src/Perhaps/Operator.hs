@@ -17,7 +17,7 @@ unary name f = Operator name True (\(x:es) -> (Derived name d (x:.Nil), es))
           d (x :. Nil) = f x
 
 binary :: String -> (Function -> Function -> String) -> Operator
-binary name f = Operator name True (\(y:x:es) -> (Derived name d (x:.y:.Nil), es))
+binary name f = Operator name False (\(y:x:es) -> (Derived name d (x:.y:.Nil), es))
     where d :: Cons (Cons Nil) Function -> String
           d (x :. y :. Nil) = f x y
 
