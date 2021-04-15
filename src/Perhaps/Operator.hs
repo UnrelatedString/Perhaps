@@ -25,7 +25,7 @@ binary name f = Operator name True (\(y:x:es) -> (Derived name d (x:.y:.Nil), es
 lookOp :: String -> Operator -- ba dum tss 🥁
 lookOp "A" = unary "A" placeholderA
 lookOp "B" = binary "B" placeholderB
-lookOp "D" = binary "B" placeholderD
+lookOp "D" = binary "D" placeholderD
 
 
 -- TODO: actual operators, replace String with something
