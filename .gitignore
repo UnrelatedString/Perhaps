@@ -29,3 +29,4 @@ cabal.project.local~
 
 .vscode/*
 !.vscode/tasks.json
+ghci
