@@ -41,6 +41,7 @@ tokens = undefined
 verboseTokens :: String -> [[Token]]
 verboseTokens = map (map parseVerboseToken . tokenizeLine "") . lines
     where tokenizeLine :: String -> String -> [String]
+          tokenizeLine "" "" = []
           tokenizeLine tok "" = pure tok
           tokenizeLine "" (' ':rest) = tokenizeLine "" rest
           tokenizeLine tok (' ':rest) = tok : tokenizeLine "" rest
