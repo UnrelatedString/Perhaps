@@ -17,7 +17,7 @@ module Perhaps.Evaluate
     ) where
 
 import Perhaps.Data
-    ( Token (LiteralT, PrimitiveT, OperatorT),
+    ( Token (AtomT, OperatorT),
       Value (Number, Char, List),
       nilad,
       FirstPassFunction (FullFunction, PartialFunction),
@@ -64,10 +64,10 @@ verboseTokens = map (map parseVerboseToken . tokenizeLine "") . lines
           munchString tok (h:rest) = munchString (h:tok) rest
           parseVerboseToken :: String -> Token
           parseVerboseToken tok
-              | all isDigit t = LiteralT $ Number $ fromInteger $ read t
-              | h == '"' = LiteralT $ List $ map Char $ tail t
+              | all isDigit t = AtomT $ nilad $ Number $ fromInteger $ read t
+              | h == '"' = AtomT $ nilad $ List $ map Char $ tail t
               | isUpper h = OperatorT $ lookOp t
-              | otherwise = PrimitiveT $ primitiveLookup t
+              | otherwise = AtomT $ primitiveLookup t
               where t = case tok of '"':r -> reverse r
                                     _ -> reverse tok
                     h = head t
@@ -98,12 +98,11 @@ operate = reverse . foldl operate' []
     where operate' :: [FirstPassFunction] -> Maybe Token -> [FirstPassFunction]
           operate' stack (Just (OperatorT op)) = d : rest
               where (d, rest) = derive op stack
-          operate' stack (Just (PrimitiveT x)) = FullFunction x : stack
-          operate' stack (Just (LiteralT x)) = FullFunction (nilad x) : stack
+          operate' stack (Just (AtomT x)) = FullFunction x : stack
           operate' stack Nothing = hole : stack
 
 fillGaps :: [FirstPassFunction] -> [PerhapsFunction]
-fillGaps (PartialFunction fill : t) = [fill $ trainify $ fillGaps t]
+fillGaps (PartialFunction fill : t) = [fill $ trainify $ fillGaps t] -- leading first for implementation convenience; can't remember the exact logic of the swap system well enough to say if this helps or hurts exotic combinations of unary and higher-ary operators on both edges
 fillGaps es = reverse $ foldl fillGaps' [] es
     where fillGaps' :: [PerhapsFunction] -> FirstPassFunction -> [PerhapsFunction]
           fillGaps' fs (PartialFunction fill) = [fill $ trainify $ reverse fs]

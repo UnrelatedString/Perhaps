@@ -10,7 +10,7 @@
 {-# LANGUAGE QuantifiedConstraints #-}
 
 module Perhaps.Data
-    ( Token (LiteralT, PrimitiveT, OperatorT),
+    ( Token (AtomT, OperatorT),
       Value (Number, Char, List),
       FirstPassFunction (FullFunction, PartialFunction),
       hole,
@@ -28,8 +28,7 @@ import Data.Ratio (Rational, numerator, denominator)
 --import Control.Category
 --import Data.Complex (Complex, realPart, imagPart)
 
-data Token = LiteralT Value
-           | PrimitiveT PerhapsFunction
+data Token = AtomT PerhapsFunction
            | OperatorT Operator
 
 data FirstPassFunction = FullFunction PerhapsFunction
