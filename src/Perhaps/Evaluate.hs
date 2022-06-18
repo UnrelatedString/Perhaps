@@ -20,7 +20,8 @@ import Perhaps.Data
     ( Token (LiteralT, PrimitiveT, OperatorT),
       Value (Number, Char, List),
       Expression (PrimitiveE, LiteralE, DerivedE),
-      Function (PrimitiveF, LiteralF, DerivedF, TrainF),
+      FirstPassFunction (FullFunction, PartialFunction),
+      Function (Function),
       Primitive,
       Operator (Operator),
       Number

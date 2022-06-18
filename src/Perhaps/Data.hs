@@ -13,11 +13,10 @@ module Perhaps.Data
     ( Token (LiteralT, PrimitiveT, OperatorT),
       Value (Number, Char, List),
       Expression (PrimitiveE, LiteralE, DerivedE),
-      Function (PrimitiveF, LiteralF, DerivedF, TrainF),
-      Primitive,
+      FirstPassFunction (FullFunction, PartialFunction),
+      PerhapsFunction (PerhapsFunction),
+      Primitive (Primitive),
       Operator (Operator),
-      Derived (Derived),
-      derive,
       Number,
       integerMaybe
     ) where
@@ -35,12 +34,16 @@ data Expression = PrimitiveE Primitive
                | LeftBindE (Maybe Expression) (Maybe Expression)
                | RightBindE (Maybe Expression) (Maybe Expression) deriving (Show)
 
-data Function = PrimitiveF Primitive
-              | LiteralF Value
-              | DerivedF (Derived Function)
-              | TrainF [Function]
-              | LeftBindF Function Function
-              | RightBindF Function Function deriving (Show)
+data FirstPassFunction = FullFunction PerhapsFunction
+                       | PartialFunction (PerhapsFunction -> PerhapsFunction)
+
+data GenericPerhapsFunction a b = PerhapsFunction Adicity (a -> b) -- xd
+
+instance Category GenericPerhapsFunction where
+    id = PerhapsFunction id
+    (PerhapsFunction x) . (PerhapsFunction y) = x . y
+
+type PerhapsFunction = GenericPerhapsFunction Value Value
 
 -- Syntactic adicity, not semantic adicity
 data Adicity = Niladic | Monadic | Dyadic | Variadic (Adicity -> Adicity)
@@ -61,25 +64,6 @@ integerMaybe x
     | otherwise = Nothing
 
 -- placeholder
-type Primitive = String
+type Primitive = Primitive Function
 
-data Derived a = forall f. (Traversable f, forall b. Show b => Show (f b)) =>
-                     Derived String (f Function -> String) (f a)
-
-instance Functor Derived where
-    fmap f (Derived name op args) = Derived name op $ fmap f args
-instance Foldable Derived where
-    foldr f x (Derived _ _ args) = foldr f x args
-instance Traversable Derived where
-    sequenceA (Derived name op args) = Derived name op <$> sequenceA args
-
-instance Show a => Show (Derived a) where
-    show (Derived name _ args) = name ++ " " ++ show args
-
-derive :: Derived Function -> String -- bad name
-derive (Derived _ op args) = op args
-
-data Operator = Operator String Bool ([Maybe Expression] -> (Derived (Maybe Expression), [Maybe Expression]))
-
-instance Show Operator where
-    show (Operator name _ _) = name
+data Operator = Operator Bool ([Maybe Expression] -> (FirstPassFunction, [Maybe Expression]))
