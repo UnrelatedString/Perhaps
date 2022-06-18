@@ -19,16 +19,25 @@ module Perhaps.Evaluate
 import Perhaps.Data
     ( Token (LiteralT, PrimitiveT, OperatorT),
       Value (Number, Char, List),
-      Expression (PrimitiveE, LiteralE, DerivedE),
+      nilad,
       FirstPassFunction (FullFunction, PartialFunction),
-      Function (Function),
-      Primitive,
+      hole,
+      PerhapsFunction,
+      nilad,
+      Adicity,
       Operator (Operator),
+      operatorIsUnary,
+      derive,
       Number
     )
 
 import Perhaps.Operator
-    ( lookOp )
+    ( lookOp
+    )
+
+import Perhaps.Primitive
+    ( primitiveLookup
+    )
 
 import Data.Char (isDigit, isUpper)
 import Data.Maybe (isNothing)
@@ -38,7 +47,7 @@ import Control.Monad (join)
 tokens :: String -> [[Token]]
 tokens = undefined
 
--- I think I'll elect to use an escape for newlines within strings
+-- I think I'll elect to use an escape/substitute for newlines within strings in both syntaxes
 verboseTokens :: String -> [[Token]]
 verboseTokens = map (map parseVerboseToken . tokenizeLine "") . lines
     where tokenizeLine :: String -> String -> [String]
@@ -58,7 +67,7 @@ verboseTokens = map (map parseVerboseToken . tokenizeLine "") . lines
               | all isDigit t = LiteralT $ Number $ fromInteger $ read t
               | h == '"' = LiteralT $ List $ map Char $ tail t
               | isUpper h = OperatorT $ lookOp t
-              | otherwise = PrimitiveT t
+              | otherwise = PrimitiveT $ primitiveLookup t
               where t = case tok of '"':r -> reverse r
                                     _ -> reverse tok
                     h = head t
@@ -75,45 +84,33 @@ isOperator :: Token -> Bool
 isOperator (OperatorT _) = True
 isOperator _ = False
 
-isUnary :: Token -> Bool
-isUnary (OperatorT (Operator _ u _)) = u
-isUnary _ = False
+tokenIsUnaryOperator :: Token -> Bool
+tokenIsUnaryOperator (OperatorT op) = operatorIsUnary op
+tokenIsUnaryOperator _ = False
 
 toPostfix :: [Token] -> [Maybe Token]
-toPostfix = map join . swapBy (any isUnary) . reverse . swapBy isOperator . reverse
+toPostfix = map join . swapBy (any tokenIsUnaryOperator) . reverse . swapBy isOperator . reverse
 
 -- TODO: care about extra missing arguments (consume more lines? supply primitives?)
-operate :: [Maybe Token] -> [Expression]
-operate = reverse . (>>= toList) . foldl operate' [] -- no top level Nothing
-    where operate' :: [Maybe Expression] -> Maybe Token -> [Maybe Expression]
-          operate' stack (Just (OperatorT (Operator _ _ op))) = Just (DerivedE d) : rest
-              where (d, rest) = op stack
-          operate' stack (Just (PrimitiveT x)) = Just (PrimitiveE x) : stack
-          operate' stack (Just (LiteralT x)) = Just (LiteralE x) : stack
-          operate' stack Nothing = Nothing : stack
+-- I... think binds would go in here when I do those?
+operate :: [Maybe Token] -> [FirstPassFunction]
+operate = reverse . foldl operate' []
+    where operate' :: [FirstPassFunction] -> Maybe Token -> [FirstPassFunction]
+          operate' stack (Just (OperatorT op)) = d : rest
+              where (d, rest) = derive op stack
+          operate' stack (Just (PrimitiveT x)) = FullFunction x : stack
+          operate' stack (Just (LiteralT x)) = FullFunction (nilad x) : stack
+          operate' stack Nothing = hole : stack
 
-completeMaybe :: Maybe Expression -> Maybe Function
-completeMaybe Nothing = Nothing
-completeMaybe (Just (DerivedE d)) = DerivedF <$> traverse completeMaybe d
-completeMaybe (Just (PrimitiveE x)) = Just $ PrimitiveF x
-completeMaybe (Just (LiteralE x)) = Just $ LiteralF x
-
-fillGap :: [Function] -> Maybe Expression -> Function
-fillGap t Nothing = TrainF t
-fillGap t (Just (DerivedE d)) = DerivedF $ fillGap t <$> d
-fillGap t (Just (PrimitiveE x)) = PrimitiveF x
-fillGap t (Just (LiteralE x)) = LiteralF x
-
-fillGaps :: [Expression] -> [Function]
-fillGaps (DerivedE d : t)
-    | isNothing $ completeMaybe $ Just $ DerivedE d = [DerivedF $ fmap (fillGap $ fillGaps t) d]
+fillGaps :: [FirstPassFunction] -> [PerhapsFunction]
+fillGaps (PartialFunction fill : t) = [fill $ trainify $ fillGaps t]
 fillGaps es = reverse $ foldl fillGaps' [] es
-    where fillGaps' :: [Function] -> Expression -> [Function]
-          fillGaps' fs (DerivedE d) =
-              case completeMaybe (Just $ DerivedE d) of
-                  Nothing -> [DerivedF $ fmap (fillGap $ reverse fs) d]
-                  Just f -> f : fs
-          fillGaps' fs (PrimitiveE x) = PrimitiveF x : fs
-          fillGaps' fs (LiteralE x) = LiteralF x : fs
+    where fillGaps' :: [PerhapsFunction] -> FirstPassFunction -> [PerhapsFunction]
+          fillGaps' fs (PartialFunction fill) = [fill $ trainify $ reverse fs]
+          fillGaps' fs (FullFunction x) = x : fs
+
+-- adicity argument Later
+trainify :: [PerhapsFunction] -> PerhapsFunction
+trainify funcs = "[" ++ unwords funcs ++ "]"
 
 testF = fillGaps.operate.toPostfix.head.verboseTokens
