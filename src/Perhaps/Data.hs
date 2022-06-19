@@ -15,7 +15,9 @@ module Perhaps.Data
       FirstPassCell (FullFunction, PartialFunction),
       hole,
       Cell (Cell, Variad),
+      PerhapsFunction,
       nilad,
+      contextualize,
       Adicity (Niladic, Monadic, Dyadic),
       Operator (Operator),
       operatorIsUnary,
@@ -29,7 +31,7 @@ import Data.Ratio (Rational, numerator, denominator)
 --import Data.Complex (Complex, realPart, imagPart)
 
 -- Syntactic adicity, not semantic adicity
-data Adicity = Niladic | Monadic | Dyadic
+data Adicity = Niladic | Monadic | Dyadic deriving Show
 
 {-
 data GenericCell a b = Cell Adicity (a -> b) -- xd
@@ -44,6 +46,10 @@ type PerhapsFunction = String
 
 data Cell = Cell Adicity PerhapsFunction 
           | Variad (Adicity -> PerhapsFunction)
+
+contextualize :: Adicity -> Cell -> (Adicity, PerhapsFunction)
+contextualize _ (Cell adicity x) = (adicity, x)
+contextualize adicity (Variad f) = (adicity, f adicity)
 
 -- for intermediate testing purposes only
 instance Show (Cell) where 

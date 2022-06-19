@@ -5,6 +5,7 @@
  -}
 
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE BlockArguments #-}
 
 module Perhaps.Evaluate
     ( tokens,
@@ -20,11 +21,13 @@ import Perhaps.Data
     ( Token (CellT, OperatorT),
       Value (Number, Char, List),
       nilad,
+      contextualize,
       FirstPassCell (FullFunction, PartialFunction),
       hole,
       Cell (Cell, Variad),
+      PerhapsFunction,
       nilad,
-      Adicity,
+      Adicity (Niladic, Monadic, Dyadic),
       Operator (Operator),
       operatorIsUnary,
       derive,
@@ -109,6 +112,21 @@ fillGaps es = reverse $ foldl fillGaps' [] es
           fillGaps' fs (FullFunction x) = x : fs
 
 tissueify :: [Cell] -> Cell
-tissueify cells = Variad $ const $ "[" ++ unwords (show <$> cells) ++ "]"
+tissueify cells = Variad \adicity -> runTissue adicity cells
 
-testF = fillGaps.operate.toPostfix.head.verboseTokens
+runTissue :: Adicity -> [Cell] -> PerhapsFunction
+runTissue = (.) <$> runTissue' <*> fmap . contextualize
+    where runTissue' :: Adicity -> [(Adicity, PerhapsFunction)] -> PerhapsFunction
+          runTissue' Niladic ((Niladic, nilad) : tail) = nilad ++ " " ++ runTissue' Monadic tail -- how do i represent this notationally lmao
+          runTissue' Niladic l = "0 " ++ runTissue' Monadic l
+          runTissue' Monadic ((Dyadic, dyad) : (Monadic, monad) : tail) = dyad ++ "<" ++ monad ++ " " ++ runTissue' Monadic tail
+          -- cba to mock up dyadic 2,2,0 lmao
+          runTissue' Dyadic ((Dyadic, dyad1) : (Dyadic, dyad2) : tail) = dyad1 ++ "<" ++ dyad2 ++ " " ++ runTissue' Dyadic tail
+          runTissue' adicity ((Dyadic, dyad) : (Niladic, nilad) : tail) = dyad ++ nilad ++ " " ++ runTissue' adicity tail
+          runTissue' adicity ((Niladic, nilad) : (Dyadic, dyad) : tail) = nilad ++ dyad ++ " " ++ runTissue' adicity tail
+          runTissue' adicity ((Monadic, monad) : tail) = monad ++ " " ++ runTissue' adicity tail
+          runTissue' adicity ((Dyadic, dyad) : tail) = dyad ++ " " ++ runTissue' adicity tail
+          runTissue' adicity ((Niladic, nilad) : tail) = "halt and catch fire"
+          runTissue' _ [] = []
+
+testF = flip contextualize.tissueify.fillGaps.operate.toPostfix.head.verboseTokens

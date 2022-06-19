@@ -8,4 +8,4 @@ import Perhaps.Data
     )
 
 primitiveLookup :: String -> Cell
-primitiveLookup x = Cell (cycle [Monadic, Dyadic] !! fromEnum (head x)) x
+primitiveLookup x = Cell (cycle [Dyadic, Monadic] !! fromEnum (head x)) x
