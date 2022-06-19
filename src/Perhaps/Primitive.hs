@@ -3,8 +3,9 @@ module Perhaps.Primitive
     ) where
 
 import Perhaps.Data
-    ( Cell
+    ( Cell (Cell),
+      Adicity (Niladic, Monadic, Dyadic)
     )
 
 primitiveLookup :: String -> Cell
-primitiveLookup = id --lmao
+primitiveLookup x = Cell (cycle [Monadic, Dyadic] !! fromEnum (head x)) x

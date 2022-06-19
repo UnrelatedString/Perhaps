@@ -22,7 +22,7 @@ import Perhaps.Data
       nilad,
       FirstPassCell (FullFunction, PartialFunction),
       hole,
-      Cell,
+      Cell (Cell, Variad),
       nilad,
       Adicity,
       Operator (Operator),
@@ -102,14 +102,13 @@ operate = reverse . foldl operate' []
           operate' stack Nothing = hole : stack
 
 fillGaps :: [FirstPassCell] -> [Cell]
-fillGaps (PartialFunction fill : t) = [fill $ trainify $ fillGaps t] -- leading first for implementation convenience; can't remember the exact logic of the swap system well enough to say if this helps or hurts exotic combinations of unary and higher-ary operators on both edges
+fillGaps (PartialFunction fill : t) = [fill $ tissueify $ fillGaps t] -- leading first for implementation convenience; can't remember the exact logic of the swap system well enough to say if this helps or hurts exotic combinations of unary and higher-ary operators on both edges
 fillGaps es = reverse $ foldl fillGaps' [] es
     where fillGaps' :: [Cell] -> FirstPassCell -> [Cell]
-          fillGaps' fs (PartialFunction fill) = [fill $ trainify $ reverse fs]
+          fillGaps' fs (PartialFunction fill) = [fill $ tissueify $ reverse fs]
           fillGaps' fs (FullFunction x) = x : fs
 
--- adicity argument Later
-trainify :: [Cell] -> Cell
-trainify funcs = "[" ++ unwords funcs ++ "]"
+tissueify :: [Cell] -> Cell
+tissueify cells = Variad $ const $ "[" ++ unwords (show <$> cells) ++ "]"
 
 testF = fillGaps.operate.toPostfix.head.verboseTokens

@@ -7,7 +7,8 @@ module Perhaps.Operator
 import Perhaps.Data
     ( Operator (Operator),
       FirstPassCell (FullFunction, PartialFunction),
-      Cell)
+      Cell (Cell),
+      Adicity (Niladic, Monadic, Dyadic))
 
 unary :: (Cell -> Cell) -> Operator
 unary f = Operator True \(x:es) -> (d x, es)
@@ -40,10 +41,10 @@ lookOp "D" = binary placeholderD
 
 
 placeholderA :: Cell -> Cell
-placeholderA x = "(" ++ x ++ " A)"
+placeholderA x = Cell Monadic $ "(" ++ show x ++ " A)"
 
 placeholderB :: Cell -> Cell -> Cell
-placeholderB x y = "(" ++ x ++ " B " ++ y ++ ")"
+placeholderB x y = Cell Monadic $ "(" ++ show x ++ " B " ++ show y ++ ")"
 
 placeholderD :: Cell -> Cell -> Cell
-placeholderD x y = "(" ++ x ++ " D " ++ y ++ ")"
+placeholderD x y = Cell Dyadic $ "(" ++ show x ++ " D " ++ show y ++ ")"

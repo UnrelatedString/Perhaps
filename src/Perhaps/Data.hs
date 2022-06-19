@@ -14,9 +14,9 @@ module Perhaps.Data
       Value (Number, Char, List),
       FirstPassCell (FullFunction, PartialFunction),
       hole,
-      Cell,
+      Cell (Cell, Variad),
       nilad,
-      Adicity,
+      Adicity (Niladic, Monadic, Dyadic),
       Operator (Operator),
       operatorIsUnary,
       derive,
@@ -28,14 +28,8 @@ import Data.Ratio (Rational, numerator, denominator)
 --import Control.Category
 --import Data.Complex (Complex, realPart, imagPart)
 
-data Token = CellT Cell
-           | OperatorT Operator
-
-data FirstPassCell = FullFunction Cell
-                       | PartialFunction (Cell -> Cell)
-
-hole :: FirstPassCell
-hole = PartialFunction id
+-- Syntactic adicity, not semantic adicity
+data Adicity = Niladic | Monadic | Dyadic
 
 {-
 data GenericCell a b = Cell Adicity (a -> b) -- xd
@@ -46,16 +40,27 @@ instance Category GenericCell where
 
 type Cell = GenericCell Value Value
 -}
-type Cell = String -- since until parsing Works again all functions need to be is visible
+type PerhapsFunction = String
+
+data Cell = Cell Adicity PerhapsFunction 
+          | Variad (Adicity -> PerhapsFunction)
+
+-- for intermediate testing purposes only
+instance Show (Cell) where 
+    show (Cell _ x) = x
+    show (Variad f) = f Monadic
 
 nilad :: Value -> Cell
-nilad = show
+nilad = Cell Niladic . show
 
--- Syntactic adicity, not semantic adicity
-data Adicity = Niladic | Monadic | Dyadic | Variadic (Adicity -> Adicity)
+data Token = CellT Cell
+           | OperatorT Operator
 
-class Adic a where
-    adicity :: a -> Adicity
+data FirstPassCell = FullFunction Cell
+                   | PartialFunction (Cell -> Cell)
+
+hole :: FirstPassCell
+hole = PartialFunction id
 
 -- TODO: flagged lists -- just using lists for convenience at moment
 -- replace before even implementing choice
