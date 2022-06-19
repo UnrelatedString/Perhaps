@@ -6,26 +6,26 @@ module Perhaps.Operator
 
 import Perhaps.Data
     ( Operator (Operator),
-      FirstPassFunction (FullFunction, PartialFunction),
-      PerhapsFunction)
+      FirstPassCell (FullFunction, PartialFunction),
+      Cell)
 
-unary :: (PerhapsFunction -> PerhapsFunction) -> Operator
+unary :: (Cell -> Cell) -> Operator
 unary f = Operator True \(x:es) -> (d x, es)
-    where d :: FirstPassFunction -> FirstPassFunction
+    where d :: FirstPassCell -> FirstPassCell
           d (FullFunction x) = FullFunction $ f x
           d (PartialFunction fill) = PartialFunction $ f . fill
 
-binary :: (PerhapsFunction -> PerhapsFunction -> PerhapsFunction) -> Operator
+binary :: (Cell -> Cell -> Cell) -> Operator
 binary f = Operator False \(y:x:es) -> (d x y, es)
-    where d :: FirstPassFunction -> FirstPassFunction -> FirstPassFunction -- maybe refactor this back into fixed lists later?
+    where d :: FirstPassCell -> FirstPassCell -> FirstPassCell -- maybe refactor this back into fixed lists later?
           d (FullFunction x) (FullFunction y) = FullFunction $ f x y
           d (FullFunction x) (PartialFunction fill) = PartialFunction $ f x . fill
           d (PartialFunction fill) (FullFunction y) = PartialFunction $ flip f y . fill
           d (PartialFunction fill1) (PartialFunction fill2) = error "Multiple missing arguments behavior unimplemented"
 
-ternary :: (PerhapsFunction -> PerhapsFunction -> PerhapsFunction -> PerhapsFunction) -> Operator
+ternary :: (Cell -> Cell -> Cell -> Cell) -> Operator
 ternary f = Operator False \(z:y:x:es) -> (d x y z, es)
-    where d :: FirstPassFunction -> FirstPassFunction -> FirstPassFunction -> FirstPassFunction
+    where d :: FirstPassCell -> FirstPassCell -> FirstPassCell -> FirstPassCell
           d (FullFunction x) (FullFunction y) (FullFunction z) = FullFunction $ f x y z
           d (FullFunction x) (FullFunction y) (PartialFunction fill) = PartialFunction $ f x y . fill
           d (FullFunction x) (PartialFunction fill) (FullFunction z) = PartialFunction $ (\y -> f x y z) . fill
@@ -39,11 +39,11 @@ lookOp "B" = binary placeholderB
 lookOp "D" = binary placeholderD
 
 
-placeholderA :: PerhapsFunction -> PerhapsFunction
+placeholderA :: Cell -> Cell
 placeholderA x = "(" ++ x ++ " A)"
 
-placeholderB :: PerhapsFunction -> PerhapsFunction -> PerhapsFunction
+placeholderB :: Cell -> Cell -> Cell
 placeholderB x y = "(" ++ x ++ " B " ++ y ++ ")"
 
-placeholderD :: PerhapsFunction -> PerhapsFunction -> PerhapsFunction
+placeholderD :: Cell -> Cell -> Cell
 placeholderD x y = "(" ++ x ++ " D " ++ y ++ ")"

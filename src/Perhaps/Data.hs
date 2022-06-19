@@ -10,11 +10,11 @@
 {-# LANGUAGE QuantifiedConstraints #-}
 
 module Perhaps.Data
-    ( Token (AtomT, OperatorT),
+    ( Token (CellT, OperatorT),
       Value (Number, Char, List),
-      FirstPassFunction (FullFunction, PartialFunction),
+      FirstPassCell (FullFunction, PartialFunction),
       hole,
-      PerhapsFunction,
+      Cell,
       nilad,
       Adicity,
       Operator (Operator),
@@ -28,27 +28,27 @@ import Data.Ratio (Rational, numerator, denominator)
 --import Control.Category
 --import Data.Complex (Complex, realPart, imagPart)
 
-data Token = AtomT PerhapsFunction
+data Token = CellT Cell
            | OperatorT Operator
 
-data FirstPassFunction = FullFunction PerhapsFunction
-                       | PartialFunction (PerhapsFunction -> PerhapsFunction)
+data FirstPassCell = FullFunction Cell
+                       | PartialFunction (Cell -> Cell)
 
-hole :: FirstPassFunction
+hole :: FirstPassCell
 hole = PartialFunction id
 
 {-
-data GenericPerhapsFunction a b = PerhapsFunction Adicity (a -> b) -- xd
+data GenericCell a b = Cell Adicity (a -> b) -- xd
 
-instance Category GenericPerhapsFunction where
-    id = PerhapsFunction id
-    (PerhapsFunction x) . (PerhapsFunction y) = x . y
+instance Category GenericCell where
+    id = Cell id
+    (Cell x) . (Cell y) = x . y
 
-type PerhapsFunction = GenericPerhapsFunction Value Value
+type Cell = GenericCell Value Value
 -}
-type PerhapsFunction = String -- since until parsing Works again all functions need to be is visible
+type Cell = String -- since until parsing Works again all functions need to be is visible
 
-nilad :: Value -> PerhapsFunction
+nilad :: Value -> Cell
 nilad = show
 
 -- Syntactic adicity, not semantic adicity
@@ -72,5 +72,5 @@ integerMaybe x
 
 data Operator = Operator {
     operatorIsUnary :: Bool,
-    derive :: ([FirstPassFunction] -> (FirstPassFunction, [FirstPassFunction]))
+    derive :: ([FirstPassCell] -> (FirstPassCell, [FirstPassCell]))
 }

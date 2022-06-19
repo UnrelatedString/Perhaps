@@ -3,8 +3,8 @@ module Perhaps.Primitive
     ) where
 
 import Perhaps.Data
-    ( PerhapsFunction
+    ( Cell
     )
 
-primitiveLookup :: String -> PerhapsFunction
+primitiveLookup :: String -> Cell
 primitiveLookup = id --lmao

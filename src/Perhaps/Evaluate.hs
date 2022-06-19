@@ -17,12 +17,12 @@ module Perhaps.Evaluate
     ) where
 
 import Perhaps.Data
-    ( Token (AtomT, OperatorT),
+    ( Token (CellT, OperatorT),
       Value (Number, Char, List),
       nilad,
-      FirstPassFunction (FullFunction, PartialFunction),
+      FirstPassCell (FullFunction, PartialFunction),
       hole,
-      PerhapsFunction,
+      Cell,
       nilad,
       Adicity,
       Operator (Operator),
@@ -64,10 +64,10 @@ verboseTokens = map (map parseVerboseToken . tokenizeLine "") . lines
           munchString tok (h:rest) = munchString (h:tok) rest
           parseVerboseToken :: String -> Token
           parseVerboseToken tok
-              | all isDigit t = AtomT $ nilad $ Number $ fromInteger $ read t
-              | h == '"' = AtomT $ nilad $ List $ map Char $ tail t
+              | all isDigit t = CellT $ nilad $ Number $ fromInteger $ read t
+              | h == '"' = CellT $ nilad $ List $ map Char $ tail t
               | isUpper h = OperatorT $ lookOp t
-              | otherwise = AtomT $ primitiveLookup t
+              | otherwise = CellT $ primitiveLookup t
               where t = case tok of '"':r -> reverse r
                                     _ -> reverse tok
                     h = head t
@@ -93,23 +93,23 @@ toPostfix = map join . swapBy (any tokenIsUnaryOperator) . reverse . swapBy isOp
 
 -- TODO: care about extra missing arguments (consume more lines? supply primitives?)
 -- I... think binds would go in here when I do those?
-operate :: [Maybe Token] -> [FirstPassFunction]
+operate :: [Maybe Token] -> [FirstPassCell]
 operate = reverse . foldl operate' []
-    where operate' :: [FirstPassFunction] -> Maybe Token -> [FirstPassFunction]
+    where operate' :: [FirstPassCell] -> Maybe Token -> [FirstPassCell]
           operate' stack (Just (OperatorT op)) = d : rest
               where (d, rest) = derive op stack
-          operate' stack (Just (AtomT x)) = FullFunction x : stack
+          operate' stack (Just (CellT x)) = FullFunction x : stack
           operate' stack Nothing = hole : stack
 
-fillGaps :: [FirstPassFunction] -> [PerhapsFunction]
+fillGaps :: [FirstPassCell] -> [Cell]
 fillGaps (PartialFunction fill : t) = [fill $ trainify $ fillGaps t] -- leading first for implementation convenience; can't remember the exact logic of the swap system well enough to say if this helps or hurts exotic combinations of unary and higher-ary operators on both edges
 fillGaps es = reverse $ foldl fillGaps' [] es
-    where fillGaps' :: [PerhapsFunction] -> FirstPassFunction -> [PerhapsFunction]
+    where fillGaps' :: [Cell] -> FirstPassCell -> [Cell]
           fillGaps' fs (PartialFunction fill) = [fill $ trainify $ reverse fs]
           fillGaps' fs (FullFunction x) = x : fs
 
 -- adicity argument Later
-trainify :: [PerhapsFunction] -> PerhapsFunction
+trainify :: [Cell] -> Cell
 trainify funcs = "[" ++ unwords funcs ++ "]"
 
 testF = fillGaps.operate.toPostfix.head.verboseTokens
