@@ -4,8 +4,14 @@ module Perhaps.Primitive
 
 import Perhaps.Data
     ( Cell (Cell),
-      Adicity (Niladic, Monadic, Dyadic)
+      nilad,
+      monad,
+      dyad,
+      Adicity (Niladic, Monadic, Dyadic),
+      Value (Number, Char, List)
     )
 
 primitiveLookup :: String -> Cell
-primitiveLookup x = Cell (cycle [Dyadic, Monadic] !! fromEnum (head x)) x
+primitiveLookup "plus" = monad add
+primitiveLookup "double" = dyad double
+

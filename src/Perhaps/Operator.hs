@@ -7,8 +7,12 @@ module Perhaps.Operator
 import Perhaps.Data
     ( Operator (Operator),
       FirstPassCell (FullFunction, PartialFunction),
-      Cell (Cell),
-      Adicity (Niladic, Monadic, Dyadic))
+      Cell (Cell, Variad),
+      monad,
+      dyad,
+      Adicity (Niladic, Monadic, Dyadic),
+      Value (Number, Char, List)
+      )
 
 unary :: (Cell -> Cell) -> Operator
 unary f = Operator True \(x:es) -> (d x, es)
@@ -35,16 +39,14 @@ ternary f = Operator False \(z:y:x:es) -> (d x y z, es)
 
 -- unified lookup across both syntaxes because lmao why not
 lookOp :: String -> Operator -- ba dum tss 🥁
-lookOp "A" = unary placeholderA
-lookOp "B" = binary placeholderB
-lookOp "D" = binary placeholderD
+lookOp "Reduce" = unary reduce
+lookOp "Compose" = binary compose
 
 
-placeholderA :: Cell -> Cell
-placeholderA x = Cell Monadic $ "(" ++ show x ++ " A)"
+reduce (Cell Dyadic f) = monad reduce'
+    where reduce' (List l) = List $ foldl1 (curry f) l
+          reduce' _ = error "this is going to be a tough one period"
+reduce (Variad v) = reduce (Cell Dyadic (v Dyadic)) -- lmao
+reduce _ = error "uhhhhhhhhhhhhhhhhh"
 
-placeholderB :: Cell -> Cell -> Cell
-placeholderB x y = Cell Monadic $ "(" ++ show x ++ " B " ++ show y ++ ")"
-
-placeholderD :: Cell -> Cell -> Cell
-placeholderD x y = Cell Dyadic $ "(" ++ show x ++ " D " ++ show y ++ ")"
+compose = undefined

@@ -16,7 +16,11 @@ module Perhaps.Data
       hole,
       Cell (Cell, Variad),
       PerhapsFunction,
+      left,
+      right,
       nilad,
+      monad,
+      dyad,
       contextualize,
       Adicity (Niladic, Monadic, Dyadic),
       Operator (Operator),
@@ -33,16 +37,8 @@ import Data.Ratio (Rational, numerator, denominator)
 -- Syntactic adicity, not semantic adicity
 data Adicity = Niladic | Monadic | Dyadic deriving Show
 
-{-
-data GenericCell a b = Cell Adicity (a -> b) -- xd
-
-instance Category GenericCell where
-    id = Cell id
-    (Cell x) . (Cell y) = x . y
-
-type Cell = GenericCell Value Value
--}
-type PerhapsFunction = String
+-- choice and side effects Later
+type PerhapsFunction = (Value, Value) -> Value
 
 data Cell = Cell Adicity PerhapsFunction 
           | Variad (Adicity -> PerhapsFunction)
@@ -57,7 +53,13 @@ instance Show (Cell) where
     show (Variad f) = f Monadic
 
 nilad :: Value -> Cell
-nilad = Cell Niladic . show
+nilad = Cell Niladic . const
+
+monad :: (Value -> Value) -> Cell
+monad = Cell Monadic . (.fst)
+
+dyad :: (Value -> Value -> Value) -> Cell
+dyad = Cell Dyadic . uncurry
 
 data Token = CellT Cell
            | OperatorT Operator
