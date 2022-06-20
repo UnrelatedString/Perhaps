@@ -1,3 +1,9 @@
+{-
+ - SPDX-FileCopyrightText: 2020-2022 UnrelatedString <https://github.com/UnrelatedString> and other Perhaps contributors
+ -
+ - SPDX-License-Identifier: BSD-3-Clause
+ -}
+
 {-# LANGUAGE BlockArguments #-}
 
 module Perhaps.Operator
@@ -11,7 +17,8 @@ import Perhaps.Data
       monad,
       dyad,
       Adicity (Niladic, Monadic, Dyadic),
-      Value (Number, Char, List)
+      Value (Number, Char, List),
+      fromLeftRight
       )
 
 unary :: (Cell -> Cell) -> Operator
@@ -44,7 +51,7 @@ lookOp "Compose" = binary compose
 
 
 reduce (Cell Dyadic f) = monad reduce'
-    where reduce' (List l) = List $ foldl1 (curry f) l
+    where reduce' (List l) = foldl1 ((f.) . fromLeftRight) l
           reduce' _ = error "this is going to be a tough one period"
 reduce (Variad v) = reduce (Cell Dyadic (v Dyadic)) -- lmao
 reduce _ = error "uhhhhhhhhhhhhhhhhh"

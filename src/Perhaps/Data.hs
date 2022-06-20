@@ -1,5 +1,5 @@
 {-
- - SPDX-FileCopyrightText: 2020-2021 UnrelatedString <https://github.com/UnrelatedString> and other Perhaps contributors
+ - SPDX-FileCopyrightText: 2020-2022 UnrelatedString <https://github.com/UnrelatedString> and other Perhaps contributors
  -
  - SPDX-License-Identifier: BSD-3-Clause
  -}
@@ -8,6 +8,7 @@
 {-# LANGUAGE FlexibleInstances #-}
 -- {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE QuantifiedConstraints #-}
+{-# LANGUAGE BlockArguments #-}
 
 module Perhaps.Data
     ( Token (CellT, OperatorT),
@@ -15,9 +16,6 @@ module Perhaps.Data
       FirstPassCell (FullFunction, PartialFunction),
       hole,
       Cell (Cell, Variad),
-      PerhapsFunction,
-      left,
-      right,
       nilad,
       monad,
       dyad,
@@ -27,7 +25,21 @@ module Perhaps.Data
       operatorIsUnary,
       derive,
       Number,
-      integerMaybe
+      integerMaybe,
+      PerhapsFunction,
+      Arguments (Arguments),
+      left,
+      right,
+      original,
+      ontoLeft,
+      ontoRight,
+      ontoOriginal,
+      onLeft,
+      onRight,
+      onOriginal,
+      swap,
+      fill,
+      fromLeftRight
     ) where
 
 import Data.Ratio (Rational, numerator, denominator)
@@ -37,9 +49,6 @@ import Data.Ratio (Rational, numerator, denominator)
 -- Syntactic adicity, not semantic adicity
 data Adicity = Niladic | Monadic | Dyadic deriving Show
 
--- choice and side effects Later
-type PerhapsFunction = (Value, Value) -> Value
-
 data Cell = Cell Adicity PerhapsFunction 
           | Variad (Adicity -> PerhapsFunction)
 
@@ -47,19 +56,14 @@ contextualize :: Adicity -> Cell -> (Adicity, PerhapsFunction)
 contextualize _ (Cell adicity x) = (adicity, x)
 contextualize adicity (Variad f) = (adicity, f adicity)
 
--- for intermediate testing purposes only
-instance Show (Cell) where 
-    show (Cell _ x) = x
-    show (Variad f) = f Monadic
-
 nilad :: Value -> Cell
 nilad = Cell Niladic . const
 
 monad :: (Value -> Value) -> Cell
-monad = Cell Monadic . (.fst)
+monad = Cell Monadic . (.left)
 
 dyad :: (Value -> Value -> Value) -> Cell
-dyad = Cell Dyadic . uncurry
+dyad f = Cell Dyadic \Arguments{left=l, right=r} -> f l r
 
 data Token = CellT Cell
            | OperatorT Operator
@@ -86,4 +90,46 @@ integerMaybe x
 data Operator = Operator {
     operatorIsUnary :: Bool,
     derive :: ([FirstPassCell] -> (FirstPassCell, [FirstPassCell]))
+}
+
+-- cyclic imports are illegal :(
+
+-- choice and side effects Later
+type PerhapsFunction = Arguments -> Value
+
+data Arguments = Arguments {
+    left :: Value,
+    right :: Value,
+    original :: Value
+}
+
+ontoLeft :: Arguments -> Value -> Arguments
+ontoLeft a v = a { left = v }
+
+ontoRight :: Arguments -> Value -> Arguments
+ontoRight a v = a { right = v }
+
+ontoOriginal :: Arguments -> Value -> Arguments
+ontoOriginal a v = a { original = v }
+
+onLeft :: PerhapsFunction -> Arguments -> Arguments
+onLeft = (<*>) ontoLeft
+
+onRight :: PerhapsFunction -> Arguments -> Arguments
+onRight = (<*>) ontoRight
+
+onOriginal :: PerhapsFunction -> Arguments -> Arguments
+onOriginal = (<*>) ontoOriginal
+
+swap :: Arguments -> Arguments
+swap a = a { left = right a, right = left a }
+
+fill :: Value -> Arguments
+fill v = Arguments v v v
+
+fromLeftRight :: Value -> Value -> Arguments
+fromLeftRight l r = Arguments {
+    left = l,
+    right = r,
+    original = l
 }

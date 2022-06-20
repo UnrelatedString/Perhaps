@@ -1,5 +1,5 @@
 {-
- - SPDX-FileCopyrightText: 2020-2021 UnrelatedString <https://github.com/UnrelatedString> and other Perhaps contributors
+ - SPDX-FileCopyrightText: 2020-2022 UnrelatedString <https://github.com/UnrelatedString> and other Perhaps contributors
  -
  - SPDX-License-Identifier: BSD-3-Clause
  -}
@@ -31,7 +31,15 @@ import Perhaps.Data
       Operator (Operator),
       operatorIsUnary,
       derive,
-      Number
+      Number,
+      Arguments,
+      left,
+      right,
+      original,
+      onLeft,
+      onRight,
+      onOriginal,
+      fill
     )
 
 import Perhaps.Operator
@@ -115,18 +123,18 @@ tissueify :: [Cell] -> Cell
 tissueify cells = Variad \adicity -> runTissue adicity cells
 
 runTissue :: Adicity -> [Cell] -> PerhapsFunction
-runTissue = (.) <$> runTissue' <*> fmap . contextualize
+runTissue = (((. onOriginal left).).) $ (.) <$> runTissue' <*> fmap . contextualize
     where runTissue' :: Adicity -> [(Adicity, PerhapsFunction)] -> PerhapsFunction
-          runTissue' Niladic ((Niladic, nilad) : tail) = nilad ++ " " ++ runTissue' Monadic tail -- how do i represent this notationally lmao
-          runTissue' Niladic l = "0 " ++ runTissue' Monadic l
-          runTissue' Monadic ((Dyadic, dyad) : (Monadic, monad) : tail) = dyad ++ "<" ++ monad ++ " " ++ runTissue' Monadic tail
-          -- cba to mock up dyadic 2,2,0 lmao
-          runTissue' Dyadic ((Dyadic, dyad1) : (Dyadic, dyad2) : tail) = dyad1 ++ "<" ++ dyad2 ++ " " ++ runTissue' Dyadic tail
-          runTissue' adicity ((Dyadic, dyad) : (Niladic, nilad) : tail) = dyad ++ nilad ++ " " ++ runTissue' adicity tail
-          runTissue' adicity ((Niladic, nilad) : (Dyadic, dyad) : tail) = nilad ++ dyad ++ " " ++ runTissue' adicity tail
-          runTissue' adicity ((Monadic, monad) : tail) = monad ++ " " ++ runTissue' adicity tail
-          runTissue' adicity ((Dyadic, dyad) : tail) = dyad ++ " " ++ runTissue' adicity tail
-          runTissue' adicity ((Niladic, nilad) : tail) = "halt and catch fire"
-          runTissue' _ [] = []
+          runTissue' Niladic ((Niladic, nilad) : tail) = runTissue' Monadic tail . fill . nilad
+          runTissue' Niladic l = runTissue' Monadic l . const (fill $ Number 0)
+          runTissue' Monadic ((Dyadic, dyad) : (Monadic, monad) : tail) = runTissue' Monadic tail . onLeft (dyad . onRight monad)
+          runTissue' Dyadic ((Dyadic, dyad1) : (Dyadic, dyad2) : (Niladic, nilad) : tail) = runTissue' Dyadic tail . onLeft (dyad2 . onRight nilad) . onLeft dyad1 -- remember this goes poof too if I do binds
+          runTissue' Dyadic ((Dyadic, dyad1) : (Dyadic, dyad2) : tail) = runTissue' Dyadic tail . onLeft (dyad1 . onRight dyad2 . onLeft original)
+          runTissue' adicity ((Dyadic, dyad) : (Niladic, nilad) : tail) = runTissue' adicity tail . onLeft (dyad . onRight nilad)
+          runTissue' adicity ((Niladic, nilad) : (Dyadic, dyad) : tail) = runTissue' adicity tail . onLeft (dyad . onLeft nilad)
+          runTissue' adicity ((Monadic, monad) : tail) = runTissue' adicity tail . onLeft monad
+          runTissue' adicity ((Dyadic, dyad) : tail) = runTissue' adicity tail . onLeft dyad
+          runTissue' adicity ((Niladic, nilad) : tail) = error "halt and catch fire"
+          runTissue' _ [] = left
 
-testF = flip contextualize.tissueify.fillGaps.operate.toPostfix.head.verboseTokens
+testF = (snd.).flip contextualize.tissueify.fillGaps.operate.toPostfix.head.verboseTokens
