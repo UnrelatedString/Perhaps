@@ -89,7 +89,7 @@ integerMaybe x
 
 data Operator = Operator {
     operatorIsUnary :: Bool,
-    derive :: ([FirstPassCell] -> (FirstPassCell, [FirstPassCell]))
+    derive :: [FirstPassCell] -> [FirstPassCell]
 }
 
 -- cyclic imports are illegal :(

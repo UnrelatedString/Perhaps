@@ -22,13 +22,13 @@ import Perhaps.Data
       )
 
 unary :: (Cell -> Cell) -> Operator
-unary f = Operator True \(x:es) -> (d x, es)
+unary f = Operator True \(x:es) -> d x:es
     where d :: FirstPassCell -> FirstPassCell
           d (FullFunction x) = FullFunction $ f x
           d (PartialFunction fill) = PartialFunction $ f . fill
 
 binary :: (Cell -> Cell -> Cell) -> Operator
-binary f = Operator False \(y:x:es) -> (d x y, es)
+binary f = Operator False \(y:x:es) -> d x y:es
     where d :: FirstPassCell -> FirstPassCell -> FirstPassCell -- maybe refactor this back into fixed lists later?
           d (FullFunction x) (FullFunction y) = FullFunction $ f x y
           d (FullFunction x) (PartialFunction fill) = PartialFunction $ f x . fill
@@ -36,7 +36,7 @@ binary f = Operator False \(y:x:es) -> (d x y, es)
           d (PartialFunction fill1) (PartialFunction fill2) = error "Multiple missing arguments behavior unimplemented"
 
 ternary :: (Cell -> Cell -> Cell -> Cell) -> Operator
-ternary f = Operator False \(z:y:x:es) -> (d x y z, es)
+ternary f = Operator False \(z:y:x:es) -> d x y z:es
     where d :: FirstPassCell -> FirstPassCell -> FirstPassCell -> FirstPassCell
           d (FullFunction x) (FullFunction y) (FullFunction z) = FullFunction $ f x y z
           d (FullFunction x) (FullFunction y) (PartialFunction fill) = PartialFunction $ f x y . fill

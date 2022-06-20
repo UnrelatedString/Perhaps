@@ -107,8 +107,7 @@ toPostfix = map join . swapBy (any tokenIsUnaryOperator) . reverse . swapBy isOp
 operate :: [Maybe Token] -> [FirstPassCell]
 operate = reverse . foldl operate' []
     where operate' :: [FirstPassCell] -> Maybe Token -> [FirstPassCell]
-          operate' stack (Just (OperatorT op)) = d : rest
-              where (d, rest) = derive op stack
+          operate' stack (Just (OperatorT op)) = derive op stack
           operate' stack (Just (CellT x)) = FullFunction x : stack
           operate' stack Nothing = hole : stack
 
