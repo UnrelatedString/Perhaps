@@ -17,7 +17,7 @@ homepage:       https://github.com/UnrelatedString/Perhaps#readme
 bug-reports:    https://github.com/UnrelatedString/Perhaps/issues
 author:         UnrelatedString
 maintainer:     unrelatedstring@gmail.com
-copyright:      2020-2021 UnrelatedString <https://github.com/UnrelatedString> and other Perhaps contributors
+copyright:      2020-2022 UnrelatedString <https://github.com/UnrelatedString> and other Perhaps contributors
 license:        BSD-3-Clause
 license-file:   LICENSE
 build-type:     Simple
@@ -33,6 +33,9 @@ library
   exposed-modules:
       Perhaps.Data
       Perhaps.Evaluate
+      Perhaps.Operator
+      Perhaps.Primitive
+      Perhaps.Invoke
   other-modules:
   hs-source-dirs:
       src
@@ -46,6 +49,8 @@ executable perhaps-exe
       Perhaps.Data
       Perhaps.Evaluate
       Perhaps.Operator
+      Perhaps.Primitive
+      Perhaps.Invoke
       Paths_perhaps
   hs-source-dirs:
       app

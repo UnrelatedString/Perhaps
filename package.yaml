@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2020-2021 UnrelatedString <https://github.com/UnrelatedString> and other Perhaps contributors
+# SPDX-FileCopyrightText: 2020-2022 UnrelatedString <https://github.com/UnrelatedString> and other Perhaps contributors
 #
 # SPDX-License-Identifier: CC0-1.0
 
@@ -9,7 +9,7 @@ license:             BSD-3-Clause
 license-file:        LICENSE
 author:              "UnrelatedString"
 maintainer:          "unrelatedstring@gmail.com"
-copyright:           "2020-2021 UnrelatedString <https://github.com/UnrelatedString> and other Perhaps contributors"
+copyright:           "2020-2022 UnrelatedString <https://github.com/UnrelatedString> and other Perhaps contributors"
 
 extra-source-files:
 - README.md

@@ -42,9 +42,16 @@ module Perhaps.Data
       fromLeftRight
     ) where
 
-import Data.Ratio (Rational, numerator, denominator)
+import Data.Ratio
+    ( Rational,
+    numerator,
+    denominator
+    )
 --import Control.Category
 --import Data.Complex (Complex, realPart, imagPart)
+import Text.Read
+    ( readListPrecDefault
+    )
 
 -- Syntactic adicity, not semantic adicity
 data Adicity = Niladic | Monadic | Dyadic deriving Show
@@ -77,7 +84,24 @@ hole = PartialFunction id
 -- TODO: flagged lists -- just using lists for convenience at moment
 -- replace before even implementing choice
 -- first class functions Eventually:tm:
-data Value = Number Number | Char Char | List [Value] deriving (Show)
+data Value = Number Number | Char Char | List [Value]
+
+charMaybe :: Value -> Maybe Char
+charMaybe (Char c) = Just c
+charMaybe _ = Nothing
+
+-- may add flags for alternative representations, but it makes sense for the most sensible representations to be Show and Read instances
+instance Show Value where
+    showsPrec 11 value onto = '(' : shows value (')' : onto)
+    showsPrec _ (List list) onto
+        | Just string <- mapM charMaybe list = shows string onto
+        | otherwise = shows list onto
+    showsPrec _ (Char char) onto = shows char onto
+    showsPrec _ (Number number) onto
+        | Just integer <- integerMaybe number = shows integer onto
+        | otherwise = shows number onto
+
+instance Read Value where
 
 -- TODO: replace with symbolic math lmao, don't really want to approximate radicals/pi
 type Number = Rational
