@@ -50,8 +50,12 @@ import Data.Ratio
 --import Control.Category
 --import Data.Complex (Complex, realPart, imagPart)
 import Text.Read
-    ( readListPrecDefault
+    ( readPrec,
+      readListPrec,
+      readListPrecDefault,
+      lexP
     )
+import qualified Text.Read (Lexeme (String, Char, Number))
 
 -- Syntactic adicity, not semantic adicity
 data Adicity = Niladic | Monadic | Dyadic deriving Show
@@ -91,6 +95,8 @@ charMaybe (Char c) = Just c
 charMaybe _ = Nothing
 
 -- may add flags for alternative representations, but it makes sense for the most sensible representations to be Show and Read instances
+-- come to think of it smash-printing should probably be the default but this seems best for degugging and such anyways
+-- pretty print higher-dimensional lists?
 instance Show Value where
     showsPrec 11 value onto = '(' : shows value (')' : onto)
     showsPrec _ (List list) onto
@@ -102,6 +108,8 @@ instance Show Value where
         | otherwise = shows number onto
 
 instance Read Value where
+    readPrec = undefined
+    readListPrec = readListPrecDefault
 
 -- TODO: replace with symbolic math lmao, don't really want to approximate radicals/pi
 type Number = Rational

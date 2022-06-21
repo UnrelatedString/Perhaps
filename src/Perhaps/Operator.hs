@@ -18,8 +18,11 @@ import Perhaps.Data
       dyad,
       Adicity (Niladic, Monadic, Dyadic),
       Value (Number, Char, List),
-      fromLeftRight
+      fromLeftRight,
+      onLeft
       )
+
+import Perhaps.Primitive (reversePrimitive)
 
 unary :: (Cell -> Cell) -> Operator
 unary f = Operator True \(x:es) -> d x:es
@@ -44,10 +47,11 @@ ternary f = Operator False \(z:y:x:es) -> d x y z:es
           d (PartialFunction fill) (FullFunction y) (FullFunction z) = PartialFunction $ (\x -> f x y z) . fill
           d _ _ _ = error "Multiple missing arguments behavior unimplemented"
 
--- unified lookup across both syntaxes because lmao why not
+-- for verbose syntax; all SBCS tokens to be tracked homogeneously
 lookOp :: String -> Operator -- ba dum tss 🥁
 lookOp "Reduce" = unary reduce
 lookOp "Compose" = binary compose
+lookOp "Backwards" = unary backwards
 
 
 reduce (Cell Dyadic f) = monad reduce'
@@ -55,5 +59,9 @@ reduce (Cell Dyadic f) = monad reduce'
           reduce' _ = error "this is going to be a tough one period"
 reduce (Variad v) = reduce (Cell Dyadic (v Dyadic)) -- lmao
 reduce _ = error "uhhhhhhhhhhhhhhhhh"
+
+backwards (Cell adicity f) = Cell adicity $ r . onLeft f . onLeft r
+    where (Cell Monadic r) = monad reversePrimitive -- this is... kind of sad
+backwards (Variad v) = Variad \adicity -> let (Cell _ b) = backwards (Cell adicity $ v adicity) in b -- eww
 
 compose = undefined
