@@ -93,7 +93,7 @@ hole = PartialFunction id
 -- TODO: flagged lists -- just using lists for convenience at moment
 -- replace before even implementing choice
 -- first class functions Eventually:tm:
-data Value = Number Number | Char Char | List [Value]
+data Value = Number Number | Char Char | List [Value] deriving (Eq)
 
 charMaybe :: Value -> Maybe Char
 charMaybe (Char c) = Just c

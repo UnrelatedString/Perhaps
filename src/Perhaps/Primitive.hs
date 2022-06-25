@@ -16,12 +16,14 @@ import Perhaps.Data
       dyad,
       Adicity (Niladic, Monadic, Dyadic),
       Value (Number, Char, List),
+      integerMaybe
     )
 
 primitiveLookup :: String -> Cell
 primitiveLookup "plus" = dyad add
 primitiveLookup "double" = monad double
 primitiveLookup "reverse" = monad reversePrimitive
+primitiveLookup "prime?" = monad isPrime
 
 add :: Value -> Value -> Value
 add (Number x) (Number y) = Number $ x + y
@@ -34,3 +36,11 @@ double _ = undefined
 reversePrimitive :: Value -> Value
 reversePrimitive (List x) = List $ reverse x
 reversePrimitive _ = undefined
+
+isPrime :: Value -> Value
+-- just use normal booleans until choice is added -- may as well satisfy the prime testing requirement for qualifying as a programming language
+-- shitty trial division since rationals are a placeholder anyways
+isPrime (Number x)
+    | Just i <- integerMaybe x, i > 2 = Number $ fromIntegral $ fromEnum $ all ((>0).mod i) [2..ceiling $ sqrt $ fromIntegral i]
+isPrime (Number 2) = Number 1
+isPrime _ = Number 0
