@@ -13,6 +13,7 @@
 module Perhaps.Data
     ( Token (CellT, OperatorT),
       Value (Number, Char, List),
+      forceReadValue,
       FirstPassCell (FullFunction, PartialFunction),
       hole,
       Cell (Cell, Variad),
@@ -54,7 +55,8 @@ import Text.Read
       readListPrec,
       readListPrecDefault,
       lexP,
-      (+++)
+      (+++),
+      readMaybe
     )
 import qualified Text.Read (Lexeme (String, Char, Number))
 import Text.Read.Lex (numberToRational)
@@ -113,11 +115,19 @@ instance Read Value where
     readPrec = (do Text.Read.Number number <- lexP
                    return $ Number $ numberToRational number) +++
                (do Text.Read.String string <- lexP
-                   return $ List $ Char <$> string) +++
+                   return $ perhapsStringify string) +++
                (do Text.Read.Char char <- lexP 
                    return $ Char char) +++
                (List <$> readListPrec)
     readListPrec = readListPrecDefault
+
+perhapsStringify :: String -> Value
+perhapsStringify = List . map Char
+
+forceReadValue :: String -> Value
+forceReadValue s
+    | Just value <- readMaybe s = value
+    | otherwise = perhapsStringify s
 
 -- TODO: replace with symbolic math lmao, don't really want to approximate radicals/pi
 type Number = Rational

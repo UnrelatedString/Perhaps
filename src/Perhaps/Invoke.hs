@@ -5,7 +5,7 @@
  -}
 
 module Perhaps.Invoke
-    (
+    ( invoke
     ) where
 
 import System.Environment (getArgs)
@@ -13,13 +13,31 @@ import Perhaps.Data
     ( Arguments (Arguments),
       fill,
       fromLeftRight,
-      Value (Char, Number, List),
+      Value (Number), -- think of better default value?
+      forceReadValue,
       Adicity (Niladic, Monadic, Dyadic),
       integerMaybe
     )
+import Perhaps.Evaluate (testF) -- maybe I should rename that or something
 
 evaluationParameters :: [Value] -> (Adicity, Arguments)
 evaluationParameters [] = (Niladic, fill (Number 0))
 evaluationParameters [x] = (Monadic, fill x)
 evaluationParameters (x:y:_) = (Dyadic, fromLeftRight x y)
 
+splitFlags :: [String] -> ([String], [String])
+splitFlags = fmap trimExplicitSeparator . span isFlag
+    where isFlag s = head s == '-' && s /= "--"
+          trimExplicitSeparator ("--":t) = t
+          trimExplicitSeparator s = s
+
+substituteStdin :: String -> IO String
+substituteStdin "-" = getContents
+substituteStdin s = return s
+
+invoke :: IO ()
+invoke = do (flags, arguments) <- splitFlags <$> getArgs
+            mapM_ (putStrLn . ("Flags don't do anything yet, but you used this one anyways: "++)) flags
+            (program : fullArguments) <- mapM substituteStdin arguments
+            print $ uncurry (testF program) $ evaluationParameters $ forceReadValue <$> fullArguments
+            

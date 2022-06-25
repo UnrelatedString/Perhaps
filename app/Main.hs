@@ -6,5 +6,7 @@
 
 module Main where
 
+import Perhaps.Invoke (invoke)
+
 main :: IO ()
-main = putStrLn "No CLI yet -- use stack ghci to play around"
+main = invoke
