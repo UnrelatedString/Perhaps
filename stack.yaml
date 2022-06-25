@@ -69,4 +69,4 @@ packages:
 # Allow a newer minor version of GHC than the snapshot specifies
 # compiler-check: newer-minor
 extra-deps:
-- fixed-list-0.1.6
+#- fixed-list-0.1.6
