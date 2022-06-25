@@ -53,9 +53,11 @@ import Text.Read
     ( readPrec,
       readListPrec,
       readListPrecDefault,
-      lexP
+      lexP,
+      (+++)
     )
 import qualified Text.Read (Lexeme (String, Char, Number))
+import Text.Read.Lex (numberToRational)
 
 -- Syntactic adicity, not semantic adicity
 data Adicity = Niladic | Monadic | Dyadic deriving Show
@@ -108,7 +110,13 @@ instance Show Value where
         | otherwise = shows number onto
 
 instance Read Value where
-    readPrec = undefined
+    readPrec = (do Text.Read.Number number <- lexP
+                   return $ Number $ numberToRational number) +++
+               (do Text.Read.String string <- lexP
+                   return $ List $ Char <$> string) +++
+               (do Text.Read.Char char <- lexP 
+                   return $ Char char) +++
+               (List <$> readListPrec)
     readListPrec = readListPrecDefault
 
 -- TODO: replace with symbolic math lmao, don't really want to approximate radicals/pi
