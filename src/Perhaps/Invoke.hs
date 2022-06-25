@@ -16,7 +16,7 @@ import Perhaps.Data
       Value (Number), -- think of better default value?
       forceReadValue,
       Adicity (Niladic, Monadic, Dyadic),
-      integerMaybe
+      stringMaybe
     )
 import Perhaps.Evaluate (testF) -- maybe I should rename that or something
 
@@ -39,4 +39,7 @@ invoke :: IO ()
 invoke = do (flags, arguments) <- splitFlags <$> getArgs
             if notElem "--verbose" flags && notElem "-v" flags then fail "SBCS syntax not implemented" else return ()
             (program : fullArguments) <- mapM substituteStdin arguments
-            print $ uncurry (testF program) $ evaluationParameters $ forceReadValue <$> fullArguments
+            let result = uncurry (testF program) $ evaluationParameters $ forceReadValue <$> fullArguments
+            case stringMaybe result of
+                Just string -> putStrLn string
+                _ -> print result

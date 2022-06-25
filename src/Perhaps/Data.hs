@@ -13,6 +13,7 @@
 module Perhaps.Data
     ( Token (CellT, OperatorT),
       Value (Number, Char, List),
+      stringMaybe,
       forceReadValue,
       FirstPassCell (FullFunction, PartialFunction),
       hole,
@@ -98,14 +99,18 @@ charMaybe :: Value -> Maybe Char
 charMaybe (Char c) = Just c
 charMaybe _ = Nothing
 
+stringMaybe :: Value -> Maybe String
+stringMaybe (List list) = mapM charMaybe list
+stringMaybe _ = Nothing
+
 -- may add flags for alternative representations, but it makes sense for the most sensible representations to be Show and Read instances
 -- come to think of it smash-printing should probably be the default but this seems best for degugging and such anyways
 -- pretty print higher-dimensional lists?
 instance Show Value where
     showsPrec 11 value onto = '(' : shows value (')' : onto)
-    showsPrec _ (List list) onto
-        | Just string <- mapM charMaybe list = shows string onto
-        | otherwise = shows list onto
+    showsPrec _ value onto
+        | Just string <- stringMaybe value = shows string onto
+    showsPrec _ (List list) onto = shows list onto
     showsPrec _ (Char char) onto = shows char onto
     showsPrec _ (Number number) onto
         | Just integer <- integerMaybe number = shows integer onto
