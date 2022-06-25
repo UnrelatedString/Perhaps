@@ -37,7 +37,6 @@ substituteStdin s = return s
 
 invoke :: IO ()
 invoke = do (flags, arguments) <- splitFlags <$> getArgs
-            mapM_ (putStrLn . ("Flags don't do anything yet, but you used this one anyways: "++)) flags
+            if notElem "--verbose" flags && notElem "-v" flags then fail "SBCS syntax not implemented" else return ()
             (program : fullArguments) <- mapM substituteStdin arguments
             print $ uncurry (testF program) $ evaluationParameters $ forceReadValue <$> fullArguments
-            
