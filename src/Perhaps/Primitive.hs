@@ -19,11 +19,16 @@ import Perhaps.Data
       integerMaybe
     )
 
+import Perhaps.Misc
+    ( antidiagonals
+    )
+
 primitiveLookup :: String -> Cell
 primitiveLookup "plus" = dyad add
 primitiveLookup "double" = monad double
 primitiveLookup "reverse" = monad reversePrimitive
 primitiveLookup "prime?" = monad isPrime
+primitiveLookup "antidiagonals" = monad antidiagonalsPrimitive
 
 add :: Value -> Value -> Value
 add (Number x) (Number y) = Number $ x + y
@@ -44,3 +49,8 @@ isPrime (Number x)
     | Just i <- integerMaybe x, i > 2 = Number $ fromIntegral $ fromEnum $ all ((>0).mod i) [2..ceiling $ sqrt $ fromIntegral i]
 isPrime (Number 2) = Number 1
 isPrime _ = Number 0
+
+antidiagonalsPrimitive :: Value -> Value
+antidiagonalsPrimitive (List outer) = List $ map List $ antidiagonals $ ohFuck <$> outer
+    where ohFuck (List inner) = inner
+          ohFuck _ = []

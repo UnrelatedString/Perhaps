@@ -36,6 +36,7 @@ library
       Perhaps.Operator
       Perhaps.Primitive
       Perhaps.Invoke
+      Perhaps.Misc
   other-modules:
   hs-source-dirs:
       src
@@ -51,6 +52,7 @@ executable perhaps-exe
       Perhaps.Operator
       Perhaps.Primitive
       Perhaps.Invoke
+      Perhaps.Misc
       Paths_perhaps
   hs-source-dirs:
       app
