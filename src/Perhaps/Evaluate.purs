@@ -1,87 +1,16 @@
-{-
- - SPDX-FileCopyrightText: 2020-2022 UnrelatedString <https://github.com/UnrelatedString> and other Perhaps contributors
- -
- - SPDX-License-Identifier: BSD-3-Clause
- -}
-
-{-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE BlockArguments #-}
+-- SPDX-FileCopyrightText: 2020-2025 UnrelatedString <https://github.com/UnrelatedString> and other Perhaps contributors
+--
+-- SPDX-License-Identifier: BSD-3-Clause
 
 module Perhaps.Evaluate
-    ( tokens,
-      verboseTokens,
-      toPostfix,
-      swapBy,
-      operate,
-      fillGaps,
-      testF
-    ) where
-
-import Perhaps.Data
-    ( Token (CellT, OperatorT),
-      Value (Number, Char, List),
-      nilad,
-      contextualize,
-      FirstPassCell (FullFunction, PartialFunction),
-      hole,
-      Cell (Cell, Variad),
-      PerhapsFunction,
-      nilad,
-      Adicity (Niladic, Monadic, Dyadic),
-      Operator (Operator),
-      operatorIsUnary,
-      derive,
-      Number,
-      Arguments,
-      left,
-      right,
-      original,
-      onLeft,
-      onRight,
-      onOriginal,
-      fill
-    )
-
-import Perhaps.Operator
-    ( lookOp
-    )
-
-import Perhaps.Primitive
-    ( primitiveLookup
-    )
-
-import Data.Char (isDigit, isUpper)
-import Data.Maybe (isNothing)
-import Data.Foldable (toList) --could just foldr (:) [] but that's less readable
-import Control.Monad (join)
-
-tokens :: String -> [[Token]]
-tokens = undefined
-
--- I think I'll elect to use an escape/substitute for newlines within strings in both syntaxes
-verboseTokens :: String -> [[Token]]
-verboseTokens = map (map parseVerboseToken . tokenizeLine "") . lines
-    where tokenizeLine :: String -> String -> [String]
-          tokenizeLine "" "" = []
-          tokenizeLine tok "" = pure tok
-          tokenizeLine "" (' ':rest) = tokenizeLine "" rest
-          tokenizeLine tok (' ':rest) = tok : tokenizeLine "" rest
-          tokenizeLine "" ('"':rest) = munchString "\"" rest
-          tokenizeLine tok ('"':rest) = tok : munchString "\"" rest
-          tokenizeLine tok (h:rest) = tokenizeLine (h:tok) rest
-          munchString :: String -> String -> [String]
-          munchString tok "" = pure tok
-          munchString tok ('"':rest) = ('"':tok) : tokenizeLine "" rest
-          munchString tok (h:rest) = munchString (h:tok) rest
-          parseVerboseToken :: String -> Token
-          parseVerboseToken tok
-              | all isDigit t = CellT $ nilad $ Number $ fromInteger $ read t
-              | h == '"' = CellT $ nilad $ List $ map Char $ tail t
-              | isUpper h = OperatorT $ lookOp t
-              | otherwise = CellT $ primitiveLookup t
-              where t = case tok of '"':r -> reverse r
-                                    _ -> reverse tok
-                    h = head t
+  ( tokens
+  , verboseTokens
+  , toPostfix
+  , swapBy
+  , operate
+  , fillGaps
+  , testF
+  ) where
 
 swapBy :: forall a. (a -> Bool) -> [a] -> [Maybe a]
 swapBy f = swapBy' Nothing
