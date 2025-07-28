@@ -2,7 +2,7 @@
 --
 -- SPDX-License-Identifier: BSD-3-Clause
 
-module Perhaps.Data
+module Perhaps.Core
   ( Token (CellT, OperatorT)
   , Value (Number, Char, List)
   , stringMaybe
