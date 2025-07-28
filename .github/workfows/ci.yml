@@ -1,0 +1,36 @@
+name: CI
+on: [push]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cache Spago dependencies
+        uses: actions/cache@v4
+        with:
+          path: .spago
+          key: spago-${{ hashFiles('spago.lock') }}
+          restore-keys: |
+            spago-
+
+      - name: Set up Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20.x"
+
+      - name: Set up Purescript and Spago
+        run: |
+          npm i -g purescript
+          npm i -g spago@next
+
+      - name: Install Spago dependencies
+        run: spago fetch --pure -v
+
+      - name: Build
+        run: spago build --strict
+
+      - name: Test
+        run: spago test --strict

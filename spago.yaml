@@ -1,0 +1,30 @@
+package:
+  name: perhaps
+  description: The next gen golflang of yesterday
+  dependencies:
+    - prelude: ">=6.0.2 <7.0.0"
+  test:
+    main: Test.Main
+    dependencies:
+      - spec
+      - spec-quickcheck
+      - spec-node
+      - my-spec-reporter
+  # yeah tbh I miiiiight publish it some time lol
+  publish:
+    version: 0.1.0
+    license: MPL-2.0
+    location:
+      githubOwner: UnrelatedString
+      githubRepo: Perhaps
+    owners:
+      - keytype: ssh-rsa
+        public: AAAAB3NzaC1yc2EAAAADAQABAAABAQCY1Gdnnq2tNSrBxKnxuLfSsl7sLjCU5Js9c3tW9/x12tA4g1grIOezpBAszHUr40XuzGMHwmd3i3iq45ORhNJeq8lbgp8I5Zc3Kv+nugSqPHWLVIfa3dwktBYpUaDIwurPZsiQwXL/QJLMwSFKLn4DK8ZctMv+8Uy123Z4rlLNfZ8obaP9odtpegNtcCJ7tHFyg0EsgFpYYZHWJd2fzB9m9YW0Hziyyc/bknOwiwCcjiLUKaSPIE/8UgiPJx1mvKopd65PbqZf093lhHl3TesWF5pqeS5esCOaBUkL6UHeQMiQGnlt/VHMvIQaXNa33RoR8luZtDmUolgXi221xrNX
+        id: june@sideros.rocks
+workspace:
+  packageSet:
+    registry: 66.0.0
+  extraPackages:
+    my-spec-reporter:
+      git: https://github.com/UnrelatedString/my-spec-reporter.git
+      ref: main
