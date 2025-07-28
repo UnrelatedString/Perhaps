@@ -24,7 +24,7 @@ module Perhaps.Core
   , Arguments (Arguments)
   ) where
 
-
+import Prelude
 
 -- Syntactic adicity, not semantic adicity
 data Adicity = Niladic | Monadic | Dyadic
@@ -44,7 +44,7 @@ monad :: (Value -> Value) -> Cell
 monad = Cell Monadic . (.left)
 
 dyad :: (Value -> Value -> Value) -> Cell
-dyad f = Cell Dyadic \Arguments { left = l, right = r } -> f l r
+dyad f = Cell Dyadic \Arguments { left, right } -> f left right
 
 data Token
   = CellTok Cell
@@ -55,11 +55,8 @@ data FirstPassCell
   | PartialFunction (Cell -> Cell)
 
 hole :: FirstPassCell
-hole = PartialFunction id
+hole = PartialFunction identity
 
--- TODO: flagged lists -- just using lists for convenience at moment
--- replace before even implementing choice
--- first class functions Eventually:tm:
 data Value = Number Number | Char Char | List ()
 
 data Operator = Operator
@@ -69,7 +66,6 @@ data Operator = Operator
 
 -- cyclic imports are illegal :(
 -- um no shit?? girlllll how the fuck were you me
-
 
 data Arguments = Arguments {
   left :: Value,

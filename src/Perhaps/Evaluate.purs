@@ -14,11 +14,12 @@ module Perhaps.Evaluate
 
 swapBy :: forall a. (a -> Bool) -> [a] -> [Maybe a]
 swapBy f = swapBy' Nothing
-    where swapBy' :: Maybe a -> [a] -> [Maybe a]
-          swapBy' h (x:t)
-              | f x = Just x : swapBy' h t
-              | otherwise = h : swapBy' (Just x) t
-          swapBy' h [] = [h]
+  where
+  swapBy' :: Maybe a -> [a] -> [Maybe a]
+  swapBy' h (x:t)
+    | f x = Just x : swapBy' h t
+    | otherwise = h : swapBy' (Just x) t
+  swapBy' h [] = [h]
 
 isOperator :: Token -> Bool
 isOperator (OperatorT _) = True
