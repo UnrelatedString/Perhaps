@@ -1,18 +1,15 @@
 <!--
-  ~ SPDX-FileCopyrightText: 2020-2022 UnrelatedString <https://github.com/UnrelatedString> and other Perhaps contributors
+  ~ SPDX-FileCopyrightText: 2020-2025 UnrelatedString <https://github.com/UnrelatedString> and other Perhaps contributors
   ~
   ~ SPDX-License-Identifier: BSD-3-Clause
   -->
 
 # Perhaps
 
-A highly experimental (and hardly-implemented) golfing language. The name refers both to the backtracking (emulated by the list monad in all its lazy glory), and to the uncertainty as to whether or not the syntax is going to make a lick of sense.
+The next-gen golflang of yesterday, Perhaps attempts to build on Jelly's innovative fixed-adicity chaining and augment it with Prolog-esque nondeterminism to be a language as expressive and aesthetically satisfying as it is terse.
 
-Run with
+Which is to say, not especially either. This was supposed to be the definition of bleeding edge design back when I abandoned it in 2021, but now I just want to do it for the vibe instead of letting perfectionism get in the way. :p If you want a modern nondet golflang, check out [Nekomata](https://github.com/AlephAlpha/Nekomata), and if you want one with powerful original syntax we could all learn a thing or two from [iogii](https://golfscript.com/iogii/).
 
-```
-stack run -- [flags] 'program' [arguments]
-```
 (`-v`/`--verbose` flag is mandatory until SBCS syntax is implemented)
 
 ## Copyright
@@ -22,3 +19,4 @@ Copyright (C) UnrelatedString <https://github.com/UnrelatedString> and other Per
 Licensed under the [Modified/3-clause BSD license](LICENSE).
 See individual files for more information,
 and the [LICENSES](LICENSES/) folder for all of the licenses used.
+<!-- wait where is cc0 used?? uhhh whatever -->
