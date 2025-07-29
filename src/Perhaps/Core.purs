@@ -3,10 +3,8 @@
 -- SPDX-License-Identifier: BSD-3-Clause
 
 module Perhaps.Core
-  ( Token (CellT, OperatorT)
-  , Value (Number, Char, List)
-  , stringMaybe
-  , forceReadValue
+  ( Token (CellTok, OperatorTok)
+  , Value (VNumber, VChar, VList)
   , FirstPassCell (FullFunction, PartialFunction)
   , hole
   , Cell (Cell, Variad)
@@ -16,32 +14,33 @@ module Perhaps.Core
   , contextualize
   , Adicity (Niladic, Monadic, Dyadic)
   , Operator (Operator)
-  , operatorIsUnary
-  , derive
-  , Number
-  , integerMaybe
   , PerhapsFunction
   , Arguments (Arguments)
   ) where
 
 import Prelude
 
+import Data.List (List)
+import Data.Tuple (Tuple(..))
+
 -- Syntactic adicity, not semantic adicity
 data Adicity = Niladic | Monadic | Dyadic
+
+type PerhapsFunction = Value -> Value
 
 data Cell
   = Cell Adicity PerhapsFunction
   | Variad (Adicity -> PerhapsFunction)
 
-contextualize :: Adicity -> Cell -> (Adicity, PerhapsFunction)
-contextualize _ (Cell adicity x) = (adicity, x)
-contextualize adicity (Variad f) = (adicity, f adicity)
+contextualize :: Adicity -> Cell -> Tuple Adicity PerhapsFunction
+contextualize _ (Cell adicity x) = Tuple adicity x
+contextualize adicity (Variad f) = Tuple adicity (f adicity)
 
 nilad :: Value -> Cell
-nilad = Cell Niladic . const
+nilad = Cell Niladic <<< const
 
 monad :: (Value -> Value) -> Cell
-monad = Cell Monadic . (.left)
+monad f = Cell Monadic \Arguments { left } -> f left
 
 dyad :: (Value -> Value -> Value) -> Cell
 dyad f = Cell Dyadic \Arguments { left, right } -> f left right
@@ -57,18 +56,19 @@ data FirstPassCell
 hole :: FirstPassCell
 hole = PartialFunction identity
 
-data Value = Number Number | Char Char | List ()
+data Value = VNumber Number | VChar Char | VList (List Value)
 
 data Operator = Operator
-  { operatorIsUnary :: Bool
-  , derive :: [FirstPassCell] -> [FirstPassCell]
+  { unary :: Boolean
+  , operate :: List FirstPassCell -> List FirstPassCell
   }
 
 -- cyclic imports are illegal :(
 -- um no shit?? girlllll how the fuck were you me
+-- wait no i've bitched about this in purescript too lol
 
-data Arguments = Arguments {
-  left :: Value,
-  right :: Value,
-  original :: Value
-}
+data Arguments = Arguments
+  { left :: Value
+  , right :: Value
+  , original :: Value
+  }

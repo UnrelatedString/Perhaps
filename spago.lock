@@ -5,12 +5,42 @@
         "path": "./",
         "core": {
           "dependencies": [
+            "lists",
+            "maybe",
             {
               "prelude": ">=6.0.2 <7.0.0"
-            }
+            },
+            "tuples"
           ],
           "build_plan": [
-            "prelude"
+            "bifunctors",
+            "const",
+            "contravariant",
+            "control",
+            "distributive",
+            "effect",
+            "either",
+            "exists",
+            "foldable-traversable",
+            "functors",
+            "identity",
+            "invariant",
+            "lazy",
+            "lists",
+            "maybe",
+            "newtype",
+            "nonempty",
+            "orders",
+            "partial",
+            "prelude",
+            "profunctor",
+            "refs",
+            "safe-coerce",
+            "tailrec",
+            "tuples",
+            "type-equality",
+            "unfoldable",
+            "unsafe-coerce"
           ]
         },
         "test": {

@@ -3,6 +3,9 @@ package:
   description: The next gen golflang of yesterday
   dependencies:
     - prelude: ">=6.0.2 <7.0.0"
+    - maybe
+    - lists
+    - tuples
   test:
     main: Test.Main
     dependencies:
